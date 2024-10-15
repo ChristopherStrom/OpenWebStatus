@@ -14,10 +14,10 @@
                 {% for week in site[3] %}
                 <div class="week-column">
                     {% for day in week %}
-                    <div class="uptime-box {{ day['status'] }}" 
-                         data-date="{{ day['date'] }}" 
+                    <div class="uptime-box {{ day.status }}" 
+                         data-date="{{ day.date }}" 
                          data-site-id="{{ site[0] }}"
-                         onclick="showDowntimeDetails('{{ site[0] }}', '{{ day['date'] }}')">
+                         onclick="showDowntimeDetails('{{ site[0] }}', '{{ day.date }}')">
                     </div>
                     {% endfor %}
                 </div>
