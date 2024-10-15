@@ -6,43 +6,53 @@
     <h1>Downtime Details for {{ date }}</h1>
     <p>Showing hourly breakdown for the selected site and date.</p>
 
-    <div class="hourly-grid">
-        {% for hour in hourly_data %}
-        <div class="hour-box {{ hour['status'] }}" data-hour="{{ hour['hour'] }}">
-            {{ hour['hour'] }}:00
-        </div>
-        {% endfor %}
-    </div>
+    <div class="hourly-grid" id="hourlyGrid"></div>
 
     <div class="actions">
         <a href="{{ url_for('index') }}" class="button">Back to Dashboard</a>
     </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const hourlyData = JSON.parse(localStorage.getItem('downtimeDetails'));
+
+            if (hourlyData) {
+                const hourlyGrid = document.getElementById('hourlyGrid');
+                hourlyData.forEach(hour => {
+                    const hourBox = document.createElement('div');
+                    hourBox.className = `hour-box ${hour.status}`;
+                    hourBox.textContent = `${hour.hour}:00`;
+                    hourlyGrid.appendChild(hourBox);
+                });
+            }
+        });
+    </script>
+
+    <style>
+        .hourly-grid {
+            display: grid;
+            grid-template-columns: repeat(12, 1fr);
+            gap: 10px;
+            margin-top: 20px;
+        }
+
+        .hour-box {
+            width: 100%;
+            padding: 15px;
+            text-align: center;
+            border-radius: 4px;
+            transition: background-color 0.3s;
+            cursor: pointer;
+            color: #fff;
+            font-weight: bold;
+        }
+
+        .hour-box.uptime {
+            background-color: #76c7c0;  /* Green for uptime */
+        }
+
+        .hour-box.downtime {
+            background-color: #ff6b6b;  /* Red for downtime */
+        }
+    </style>
 {% endblock %}
-
-<style>
-    .hourly-grid {
-        display: grid;
-        grid-template-columns: repeat(12, 1fr);
-        gap: 10px;
-        margin-top: 20px;
-    }
-
-    .hour-box {
-        width: 100%;
-        padding: 15px;
-        text-align: center;
-        border-radius: 4px;
-        transition: background-color 0.3s;
-        cursor: pointer;
-        color: #fff;
-        font-weight: bold;
-    }
-
-    .hour-box.uptime {
-        background-color: #76c7c0;  /* Green for uptime */
-    }
-
-    .hour-box.downtime {
-        background-color: #ff6b6b;  /* Red for downtime */
-    }
-</style>

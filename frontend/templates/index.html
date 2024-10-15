@@ -14,7 +14,9 @@
                 {% for week in site[3] %}
                 <div class="week-column">
                     {% for day in week %}
-                    <div class="uptime-box {{ day['status'] }}" data-date="{{ day['date'] }}" data-site-id="{{ site[5] }}"></div>
+                    <div class="uptime-box {{ day['status'] }}" data-date="{{ day['date'] }}" data-site-id="{{ loop.parent.parentloop.index }}">
+                        {{ day['date'] }}
+                    </div>
                     {% endfor %}
                 </div>
                 {% endfor %}
@@ -23,57 +25,29 @@
         {% endfor %}
     </div>
 
-    <!-- Modal for displaying downtime by hour -->
-    <div id="downtime-modal" class="modal">
-        <div class="modal-content">
-            <span class="close">&times;</span>
-            <h2>Downtime by Hour for <span id="modal-date"></span></h2>
-            <div id="downtime-hours">
-                <!-- Downtime data will be displayed here -->
-            </div>
-        </div>
-    </div>
+    <script>
+        document.querySelectorAll('.uptime-box').forEach(box => {
+            box.addEventListener('click', function() {
+                const siteId = this.getAttribute('data-site-id');
+                const date = this.getAttribute('data-date');
 
-{% endblock %}
-
-<script>
-document.addEventListener('DOMContentLoaded', () => {
-    // Add event listeners to all uptime boxes
-    document.querySelectorAll('.uptime-box').forEach(box => {
-        box.addEventListener('click', async (event) => {
-            const date = event.target.dataset.date;
-            const siteId = event.target.dataset.siteId;
-
-            // Open the modal
-            const modal = document.getElementById('downtime-modal');
-            modal.style.display = 'block';
-            document.getElementById('modal-date').innerText = date;
-
-            try {
-                // Fetch the downtime data by hour for the selected date
-                const response = await fetch(`/downtime/${siteId}/${date}`);
-                const data = await response.json();
-
-                if (data.error) {
-                    document.getElementById('downtime-hours').innerHTML = `<p>${data.error}</p>`;
-                } else {
-                    let content = '<ul>';
-                    for (const [hour, count] of Object.entries(data)) {
-                        content += `<li>${hour}:00 - ${count} times down</li>`;
-                    }
-                    content += '</ul>';
-                    document.getElementById('downtime-hours').innerHTML = content;
-                }
-            } catch (err) {
-                document.getElementById('downtime-hours').innerHTML = '<p>Failed to fetch downtime data.</p>';
-            }
+                fetch(`/api/downtime/${siteId}/${date}`)
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.error) {
+                            alert('Error fetching data: ' + data.error);
+                        } else {
+                            // Store the response in local storage to be used in another page
+                            localStorage.setItem('downtimeDetails', JSON.stringify(data.hourly_data));
+                            // Redirect to the downtime page
+                            window.location.href = `/downtime/${siteId}/${date}`;
+                        }
+                    })
+                    .catch(error => {
+                        console.error('Error:', error);
+                        alert('Unable to fetch data. Please try again later.');
+                    });
+            });
         });
-    });
-
-    // Close the modal when the user clicks on <span> (x)
-    document.querySelector('.modal .close').addEventListener('click', () => {
-        const modal = document.getElementById('downtime-modal');
-        modal.style.display = 'none';
-    });
-});
-</script>
+    </script>
+{% endblock %}

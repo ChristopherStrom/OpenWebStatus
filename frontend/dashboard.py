@@ -5,7 +5,7 @@ import hashlib
 import random
 import string
 import time
-from flask import Flask, render_template, request, redirect, url_for, session
+from flask import Flask, render_template, request, redirect, url_for, session, jsonify
 
 app = Flask(__name__)
 app.secret_key = 'your_secret_key'  # Replace with your actual secret key
@@ -198,9 +198,9 @@ def edit_site(site_id):
 
     return render_template('edit_site.html', site=site)
 
-@app.route('/downtime/<site_id>/<date>', methods=['GET'])
-def downtime_details(site_id, date):
-    """Display downtime details for a specific site and date by hour."""
+@app.route('/api/downtime/<site_id>/<date>', methods=['GET'])
+def get_downtime_details(site_id, date):
+    """API endpoint to get downtime details for a specific site and date."""
     try:
         with sqlite3.connect(DATABASE) as conn:
             cursor = conn.cursor()
@@ -218,10 +218,10 @@ def downtime_details(site_id, date):
             for hour, count in downtime_hours:
                 hourly_data[int(hour)]['status'] = 'downtime'
 
-            return render_template('downtime.html', site_id=site_id, date=date, hourly_data=hourly_data)
+            return jsonify({'hourly_data': hourly_data})
     except Exception as e:
-        logging.error(f"Error fetching downtime by hour: {e}")
-        return "Error retrieving downtime data", 500
+        logging.error(f"Error fetching downtime by hour for API: {e}")
+        return jsonify({'error': 'Error retrieving downtime data'}), 500
 
 # Add Site page
 @app.route('/add_site', methods=['GET', 'POST'])
