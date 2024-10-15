@@ -9,7 +9,7 @@ import hashlib
 app = Flask(__name__)
 app.secret_key = 'your_secret_key'  # Replace with your secret key
 
-DATABASE = 'uptime.db'
+DATABASE = os.path.join(os.path.dirname(os.path.abspath(__file__)), '../backend/uptime.db')
 
 # Ensure the 'default' and 'default/logs' folders exist
 def ensure_default_folders():
@@ -35,18 +35,17 @@ logging.basicConfig(filename=log_file, level=logging.DEBUG,
                     format='%(asctime)s - %(levelname)s - %(message)s')
 
 # Function to create database and uptime/user tables if they don't exist
-# Function to create database and uptime/user tables if they don't exist
 def init_db():
     try:
-        # Check if backend folder exists, create if it doesn't
+        # Ensure the backend folder exists, create if it doesn't
         backend_folder = os.path.dirname(DATABASE)
         if not os.path.exists(backend_folder):
             os.makedirs(backend_folder)
             logging.info(f"Created backend folder: {backend_folder}")
 
-        # Connect to the database and create tables if they don't exist
+        # Connect to the database and create tables
         conn = sqlite3.connect(DATABASE)
-        logging.info(f"Connected to the database at: {DATABASE}")  # Log the path to the database
+        logging.info(f"Connected to the database at: {DATABASE}")
         
         cursor = conn.cursor()
 
