@@ -6,12 +6,12 @@
     <h1>Site Monitoring Dashboard</h1>
 
     <div class="tiles-container">
-        {% for site in data %}
+        {% for site in sites %}
         <div class="tile">
             <div class="site-name">{{ site[0] }}</div>
             <div class="uptime-grid">
-                {% for day in site[1] %}
-                <div class="uptime-box {{ 'uptime' if day == 'up' else 'downtime' }}"></div>
+                {% for day in site[3] %}
+                <div class="uptime-box {{ 'uptime' if day == 'up' else 'downtime' if day == 'down' else 'disabled' }}"></div>
                 {% endfor %}
             </div>
         </div>
