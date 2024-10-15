@@ -46,6 +46,49 @@ def get_all_sites():
     except Exception as e:
         logging.error(f"Error fetching sites: {e}")
         return []
+    
+# Fetch site data for displaying uptime/downtime in dashboard
+def get_site_data():
+    try:
+        conn = sqlite3.connect(DATABASE)
+        cursor = conn.cursor()
+        cursor.execute("""
+            SELECT id, name, purpose, url FROM sites
+        """)
+        sites = cursor.fetchall()
+
+        site_data = []
+        for site in sites:
+            site_id = site[0]
+            name = site[1]
+            purpose = site[2]
+            url = site[3]
+            
+            # Get uptime data for the past 365 days
+            cursor.execute("""
+                SELECT date(down_at) FROM downtime
+                WHERE site_id = ? AND down_at >= date('now', '-365 days')
+                ORDER BY down_at ASC
+            """, (site_id,))
+            downtime_dates = [row[0] for row in cursor.fetchall()]
+
+            # Construct a list of days with 'up' or 'down' status
+            days_status = []
+            for day_offset in range(365):
+                day = (time.strftime('%Y-%m-%d', time.gmtime(time.time() - day_offset * 86400)))
+                if day in downtime_dates:
+                    days_status.append('down')
+                else:
+                    days_status.append('up')
+            days_status.reverse()  # Show oldest first
+
+            site_data.append((name, purpose, url, days_status))
+
+        conn.close()
+        return site_data
+    except Exception as e:
+        logging.error(f"Error fetching site data: {e}")
+        return []
 
 # Settings page to add and manage sites
 @app.route('/settings')
