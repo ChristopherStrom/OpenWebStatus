@@ -184,30 +184,41 @@ input[type="checkbox"] {
 /* Uptime Grid Horizontal Layout */
 .uptime-grid-horizontal {
     display: flex;
-    justify-content: space-between;
-    align-items: center;
+    gap: 10px;  /* Adjust spacing between weeks as necessary */
+    margin-top: 20px;
     overflow-x: auto;
     padding: 10px 0;
 }
 
+.week-column {
+    display: flex;
+    flex-direction: column;
+    gap: 3px; /* Adjust spacing between days as necessary */
+}
+
 .uptime-box-horizontal {
-    width: 10px;
-    height: 10px;
-    border-radius: 2px;
+    width: 20px;
+    height: 20px;
+    border-radius: 3px;
+    transition: background-color 0.3s;
+    position: relative;
+    cursor: pointer;
 }
 
 .uptime-box-horizontal.uptime {
-    background-color: #76c7c0;
+    background-color: #76c7c0;  /* Green for uptime */
 }
 
 .uptime-box-horizontal.downtime {
-    background-color: #ff6b6b;
+    background-color: #ff6b6b;  /* Red for downtime */
 }
 
 .uptime-box-horizontal:hover::after {
     content: attr(data-date);
     position: absolute;
-    bottom: 20px;
+    bottom: 25px;
+    left: 50%;
+    transform: translateX(-50%);
     background-color: #333;
     color: #fff;
     padding: 5px;
