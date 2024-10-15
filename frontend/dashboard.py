@@ -157,12 +157,24 @@ def seed_admin_user():
     except Exception as e:
         logging.error(f"Error during admin user seeding: {e}")
 
-# Monitor sites in the background
 def monitor_sites():
     while True:
         try:
             conn = sqlite3.connect(DATABASE)
             cursor = conn.cursor()
+
+            # Check if the 'sites' table exists before querying it
+            cursor.execute('''
+                SELECT name FROM sqlite_master WHERE type='table' AND name='sites';
+            ''')
+            table_exists = cursor.fetchone()
+
+            if not table_exists:
+                logging.error("Table 'sites' does not exist. Exiting site monitoring.")
+                conn.close()
+                return  # Stop monitoring if table doesn't exist
+
+            # Now we know the 'sites' table exists, query for sites
             cursor.execute("SELECT id, url, frequency FROM sites WHERE enabled=1")
             sites = cursor.fetchall()
 
@@ -171,8 +183,14 @@ def monitor_sites():
 
             conn.close()
             time.sleep(10)  # Recheck every 10 seconds for new sites
+
+        except sqlite3.Error as e:
+            logging.error(f"SQLite error occurred in site monitoring: {e}")
+            time.sleep(10)  # Delay before retrying
         except Exception as e:
             logging.error(f"Error in site monitoring: {e}")
+            time.sleep(10)  # Delay before retrying
+
 
 # Check the status of each site and log downtime if needed
 def check_site_status(site_id, url, frequency):
