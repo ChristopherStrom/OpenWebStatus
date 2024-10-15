@@ -198,6 +198,27 @@ def edit_site(site_id):
 
     return render_template('edit_site.html', site=site)
 
+@app.route('/downtime/<site_id>/<date>', methods=['GET'])
+def get_downtime_by_hour(site_id, date):
+    """Get downtime data for a specific site and date by hour."""
+    try:
+        with sqlite3.connect(DATABASE) as conn:
+            cursor = conn.cursor()
+            cursor.execute("""
+                SELECT strftime('%H', down_at) as hour, COUNT(*)
+                FROM downtime
+                WHERE site_id = ? AND date(down_at) = ?
+                GROUP BY hour
+                ORDER BY hour
+            """, (site_id, date))
+            downtime_hours = cursor.fetchall()
+
+            downtime_data = {hour: count for hour, count in downtime_hours}
+        return jsonify(downtime_data)
+    except Exception as e:
+        logging.error(f"Error fetching downtime by hour: {e}")
+        return jsonify({'error': 'Failed to retrieve downtime data'}), 500
+    
 # Add Site page
 @app.route('/add_site', methods=['GET', 'POST'])
 def add_site():
