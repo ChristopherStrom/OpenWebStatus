@@ -120,8 +120,8 @@ main {
 
 .uptime-box:hover::after {
     content: attr(data-date);
-    position: fixed;
-    bottom: 25px;
+    position: absolute;
+    top: -35px;  /* Adjusted to display above the hovered box */
     left: 50%;
     transform: translateX(-50%);
     background-color: #333;
@@ -132,6 +132,7 @@ main {
     white-space: nowrap;
     z-index: 100;
 }
+
 
 /* Special case for tooltips in the top row */
 .week-column:first-child .uptime-box:hover::after {
