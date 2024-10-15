@@ -14,15 +14,6 @@ app = Flask(__name__)
 app.secret_key = 'your_secret_key'  # Replace with your secret key
 DATABASE = os.path.join(os.path.dirname(os.path.abspath(__file__)), '../backend/uptime.db')
 
-log_folder = ensure_default_folders()  # Ensure the folder is created
-log_file = os.path.join(log_folder, 'app.log')
-
-logging.basicConfig(
-    filename=log_file,
-    level=logging.DEBUG,  # Ensure DEBUG level is set for detailed logging
-    format='%(asctime)s - %(levelname)s - %(message)s'
-)
-
 # Add this to confirm logging is working
 logging.info("Logging system initialized successfully.")
 
@@ -40,6 +31,15 @@ def ensure_default_folders():
         logging.info(f"Created logs folder: {log_folder}")
 
     return log_folder
+
+log_folder = ensure_default_folders()  # Ensure the folder is created
+log_file = os.path.join(log_folder, 'app.log')
+
+logging.basicConfig(
+    filename=log_file,
+    level=logging.DEBUG,  # Ensure DEBUG level is set for detailed logging
+    format='%(asctime)s - %(levelname)s - %(message)s'
+)
 
 def init_db():
     logging.info("Starting database initialization...")
