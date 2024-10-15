@@ -43,11 +43,20 @@ def init_db():
             os.makedirs(backend_folder)
             logging.info(f"Created backend folder: {backend_folder}")
 
+        # Check if the database file exists before connecting
+        db_exists = os.path.exists(DATABASE)
         conn = sqlite3.connect(DATABASE)
-        logging.info(f"Connected to the database at: {DATABASE}")
+        
+        # Log the creation of the database if it didn't exist before
+        if not db_exists:
+            logging.info(f"Created new database at: {DATABASE}")
+        else:
+            logging.info(f"Using existing database at: {DATABASE}")
+
         cursor = conn.cursor()
 
-        # Create uptime table
+        # Log before attempting to create each table
+        logging.info("Attempting to create 'uptime' table...")
         cursor.execute('''
             CREATE TABLE IF NOT EXISTS uptime (
                 id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -55,8 +64,9 @@ def init_db():
                 status TEXT
             )
         ''')
+        logging.info("'uptime' table created or already exists.")
 
-        # Create users table
+        logging.info("Attempting to create 'users' table...")
         cursor.execute('''
             CREATE TABLE IF NOT EXISTS users (
                 id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -64,8 +74,9 @@ def init_db():
                 password TEXT
             )
         ''')
+        logging.info("'users' table created or already exists.")
 
-        # Create sites table
+        logging.info("Attempting to create 'sites' table...")
         cursor.execute('''
             CREATE TABLE IF NOT EXISTS sites (
                 id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -76,8 +87,9 @@ def init_db():
                 enabled INTEGER
             )
         ''')
+        logging.info("'sites' table created or already exists.")
 
-        # Create downtime table
+        logging.info("Attempting to create 'downtime' table...")
         cursor.execute('''
             CREATE TABLE IF NOT EXISTS downtime (
                 id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -85,22 +97,20 @@ def init_db():
                 down_at TEXT
             )
         ''')
+        logging.info("'downtime' table created or already exists.")
 
-        # Check if there are any sites in the 'sites' table
-        cursor.execute("SELECT COUNT(*) FROM sites")
-        site_count = cursor.fetchone()[0]
-
-        # If no sites exist, insert the default Google site
-        if site_count == 0:
-            cursor.execute('''
-                INSERT INTO sites (name, purpose, url, frequency, enabled)
-                VALUES (?, ?, ?, ?, ?)
-            ''', ('Google', 'Search Engine', 'https://www.google.com', 300, 1))  # 300 seconds = 5 minutes
-            logging.info('Default site (Google) added to sites table.')
-
+        # Commit the changes
         conn.commit()
+        logging.info("Tables created successfully and changes committed.")
+        
+        # Close the connection
         conn.close()
-        logging.info('Database and tables initialized successfully.')
+        logging.info("Database connection closed.")
+    
+    except sqlite3.Error as e:
+        logging.error(f"SQLite error occurred: {e}")
+        sys.exit(1)  # Exit the program on failure
+
     except Exception as e:
         logging.error(f"Error during database initialization: {e}")
         sys.exit(1) 
