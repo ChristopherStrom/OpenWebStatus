@@ -46,7 +46,7 @@ def get_all_sites():
     except Exception as e:
         logging.error(f"Error fetching sites: {e}")
         return []
-    
+
 # Fetch site data for displaying uptime/downtime in dashboard
 def get_site_data():
     try:
@@ -90,15 +90,6 @@ def get_site_data():
         logging.error(f"Error fetching site data: {e}")
         return []
 
-# Settings page to add and manage sites
-@app.route('/settings')
-def settings():
-    if 'logged_in' not in session:
-        return redirect(url_for('login'))
-
-    sites = get_all_sites()
-    return render_template('settings.html', sites=sites)
-
 # Function to generate a random password
 def generate_random_password(length=10):
     characters = string.ascii_letters + string.digits + string.punctuation
@@ -140,32 +131,6 @@ def seed_admin_user():
         conn.close()
     except Exception as e:
         logging.error(f"Error during admin user seeding: {e}")
-
-# Fetch site data for displaying uptime/downtime in dashboard
-def get_site_data():
-    try:
-        conn = sqlite3.connect(DATABASE)
-        cursor = conn.cursor()
-        cursor.execute("""
-            SELECT name, (
-                SELECT group_concat(
-                    CASE
-                        WHEN EXISTS (SELECT 1 FROM downtime WHERE downtime.site_id = sites.id AND date(downtime.down_at) = day) THEN 'down'
-                        ELSE 'up'
-                    END, ','
-                )
-                FROM (
-                    SELECT date('now', '-' || (365 - rowid) || ' days') AS day
-                    FROM sqlite_sequence WHERE rowid <= 365
-                )
-            ) AS status FROM sites
-        """)
-        results = cursor.fetchall()
-        conn.close()
-        return results
-    except Exception as e:
-        logging.error(f"Error fetching site data: {e}")
-        return []
 
 # Login route
 @app.route('/login', methods=['GET', 'POST'])
@@ -211,32 +176,32 @@ def index():
     return render_template('index.html', data=data)
 
 # Settings page to add and manage sites
-@app.route('/settings')
+@app.route('/settings', methods=['GET', 'POST'])
 def settings():
     if 'logged_in' not in session:
         return redirect(url_for('login'))
-    return render_template('settings.html')
 
-# Add a new site
-@app.route('/add_site', methods=['POST'])
-def add_site():
-    name = request.form['name']
-    purpose = request.form['purpose']
-    url = request.form['url']
-    frequency = int(request.form['frequency'])
-    enabled = 1 if 'enabled' in request.form else 0
+    if request.method == 'POST':
+        name = request.form['name']
+        purpose = request.form['purpose']
+        url = request.form['url']
+        frequency = int(request.form['frequency'])
+        enabled = 1 if 'enabled' in request.form else 0
 
-    try:
-        conn = sqlite3.connect(DATABASE)
-        cursor = conn.cursor()
-        cursor.execute("INSERT INTO sites (name, purpose, url, frequency, enabled) VALUES (?, ?, ?, ?, ?)",
-                       (name, purpose, url, frequency, enabled))
-        conn.commit()
-        conn.close()
-        logging.info(f"Added new site: {name}")
-    except Exception as e:
-        logging.error(f"Error adding site: {e}")
-    return redirect(url_for('settings'))
+        try:
+            conn = sqlite3.connect(DATABASE)
+            cursor = conn.cursor()
+            cursor.execute("INSERT INTO sites (name, purpose, url, frequency, enabled) VALUES (?, ?, ?, ?, ?)",
+                           (name, purpose, url, frequency, enabled))
+            conn.commit()
+            conn.close()
+            logging.info(f"Added new site: {name}")
+        except Exception as e:
+            logging.error(f"Error adding site: {e}")
+        return redirect(url_for('settings'))
+
+    sites = get_all_sites()
+    return render_template('settings.html', sites=sites)
 
 if __name__ == '__main__':
     # Ensure the default and logs folder exist
