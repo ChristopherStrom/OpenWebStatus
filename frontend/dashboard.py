@@ -198,30 +198,29 @@ def edit_site(site_id):
 
     return render_template('edit_site.html', site=site)
 
-@app.route('/api/downtime/<int:site_id>/<date>', methods=['GET'])
-def get_downtime_details(site_id, date):
-    """API endpoint to get downtime details for a specific site and date."""
+# Route to display downtime details page for a specific site and date
+@app.route('/downtime/<int:site_id>/<date>')
+def downtime(site_id, date):
+    if 'logged_in' not in session:
+        return redirect(url_for('login'))
+
     try:
+        # Fetch site information for display
         with sqlite3.connect(DATABASE) as conn:
             cursor = conn.cursor()
-            cursor.execute("""
-                SELECT strftime('%H', down_at) AS hour, COUNT(*)
-                FROM downtime
-                WHERE site_id = ? AND date(down_at) = ?
-                GROUP BY hour
-                ORDER BY hour
-            """, (site_id, date))
-            downtime_hours = cursor.fetchall()
-
-            # Prepare data with 24 hours
-            hourly_data = [{'hour': f"{i:02}", 'status': 'uptime'} for i in range(24)]
-            for hour, count in downtime_hours:
-                hourly_data[int(hour)]['status'] = 'downtime'
-
-            return jsonify({'hourly_data': hourly_data})
+            cursor.execute("SELECT name FROM sites WHERE id = ?", (site_id,))
+            site = cursor.fetchone()
+        
+        if not site:
+            return "Site not found", 404
+        
+        site_name = site[0]
     except Exception as e:
-        logging.error(f"Error fetching downtime by hour for API: {e}")
-        return jsonify({'error': 'Error retrieving downtime data'}), 500
+        logging.error(f"Error fetching site with id {site_id} for downtime page: {e}")
+        return "Error retrieving site data", 500
+
+    # Render downtime.html and pass the site details and date
+    return render_template('downtime.html', site_id=site_id, date=date, site_name=site_name)
 
 # Ensure the default and logs folder exist
 ensure_default_folders()
