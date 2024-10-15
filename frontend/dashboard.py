@@ -85,6 +85,18 @@ def init_db():
             )
         ''')
 
+        # Check if there are any sites in the 'sites' table
+        cursor.execute("SELECT COUNT(*) FROM sites")
+        site_count = cursor.fetchone()[0]
+
+        # If no sites exist, insert the default Google site
+        if site_count == 0:
+            cursor.execute('''
+                INSERT INTO sites (name, purpose, url, frequency, enabled)
+                VALUES (?, ?, ?, ?, ?)
+            ''', ('Google', 'Search Engine', 'https://www.google.com', 300, 1))  # 300 seconds = 5 minutes
+            logging.info('Default site (Google) added to sites table.')
+
         conn.commit()
         conn.close()
         logging.info('Database and tables initialized successfully.')
