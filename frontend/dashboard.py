@@ -36,6 +36,8 @@ log_file = os.path.join(log_folder, 'app.log')
 logging.basicConfig(filename=log_file, level=logging.DEBUG,
                     format='%(asctime)s - %(levelname)s - %(message)s')
 
+import sys
+
 def init_db():
     try:
         backend_folder = os.path.dirname(DATABASE)
@@ -45,6 +47,7 @@ def init_db():
 
         # Check if the database file exists before connecting
         db_exists = os.path.exists(DATABASE)
+        logging.info(f"Database path: {DATABASE}")
         conn = sqlite3.connect(DATABASE)
         
         # Log the creation of the database if it didn't exist before
@@ -100,6 +103,7 @@ def init_db():
         logging.info("'downtime' table created or already exists.")
 
         # Commit the changes
+        logging.info("Committing changes...")
         conn.commit()
         logging.info("Tables created successfully and changes committed.")
         
@@ -108,12 +112,12 @@ def init_db():
         logging.info("Database connection closed.")
     
     except sqlite3.Error as e:
-        logging.error(f"SQLite error occurred: {e}")
+        logging.error(f"SQLite error occurred during database initialization: {e}")
         sys.exit(1)  # Exit the program on failure
 
     except Exception as e:
         logging.error(f"Error during database initialization: {e}")
-        sys.exit(1) 
+        sys.exit(1)  # Exit the program on failure
 
 # Function to generate a random password
 def generate_random_password(length=10):
