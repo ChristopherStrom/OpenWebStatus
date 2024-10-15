@@ -161,11 +161,14 @@ def logout():
 
 @app.route('/')
 def index():
-    if 'logged_in' not in session:
-        return redirect(url_for('login'))
-
     data = get_daily_uptime()
     return render_template('index.html', data=data)
+
+@app.route('/settings')
+def settings():
+    if 'logged_in' not in session:
+        return redirect(url_for('login'))
+    return render_template('settings.html')
 
 if __name__ == '__main__':
     # Ensure the default and logs folder exist

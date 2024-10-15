@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}OpenWebStatus{% endblock %}</title>
+    <link href="/static/theme.css" rel="stylesheet">
+</head>
+<body>
+    <header>
+        <div class="logo">OpenWebStatus Dashboard</div>
+        <nav>
+            <a href="/" class="nav-link">Dashboard</a>
+            <a href="/settings" class="nav-link">Settings</a>
+            <a href="/logout" class="nav-link">Logout</a>
+        </nav>
+    </header>
+
+    <main>
+        {% block content %}
+        <!-- Page-specific content goes here -->
+        {% endblock %}
+    </main>
+
+    <footer>
+        <p>&copy; 2024 OpenWebStatus</p>
+    </footer>
+</body>
+</html>

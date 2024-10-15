@@ -1,22 +1,14 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>OpenWebStatus Dashboard</title>
-    <style>
-        .calendar { display: grid; grid-template-columns: repeat(7, 20px); }
-        .day { width: 20px; height: 20px; margin: 2px; background-color: lightgrey; }
-        .day.up { background-color: green; }
-        .day.down { background-color: red; }
-    </style>
-</head>
-<body>
-    <h1>Website Uptime Status</h1>
-    <div class="calendar">
-        {% for timestamp, status in data %}
-            <div class="day {{ status }}"></div>
-        {% endfor %}
+{% extends "theme.html" %}
+
+{% block title %}Dashboard{% endblock %}
+
+{% block content %}
+    <div class="uptime-status">
+        <h1>Website Uptime Status</h1>
+        <div class="uptime-data">
+            {% for timestamp, status in data %}
+                <div class="{% if status == 'up' %}up{% else %}down{% endif %}"></div>
+            {% endfor %}
+        </div>
     </div>
-</body>
-</html>
+{% endblock %}
