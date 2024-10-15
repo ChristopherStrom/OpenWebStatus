@@ -3,11 +3,17 @@
 {% block title %}Dashboard{% endblock %}
 
 {% block content %}
-    <div class="uptime-status">
-        <h1>Website Uptime Status</h1>
-        <div class="uptime-data">
+    <div class="card">
+        <h2>Website Uptime Status</h2>
+        <div class="status-blocks">
             {% for timestamp, status in data %}
-                <div class="{% if status == 'up' %}up{% else %}down{% endif %}"></div>
+                <div class="status-block {% if status == 'up' %}status-up{% else %}status-down{% endif %}">
+                    {% if status == 'up' %}
+                        UP - {{ timestamp }}
+                    {% else %}
+                        DOWN - {{ timestamp }}
+                    {% endif %}
+                </div>
             {% endfor %}
         </div>
     </div>

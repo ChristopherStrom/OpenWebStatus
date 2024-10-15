@@ -21,9 +21,11 @@
     </header>
 
     <main>
-        {% block content %}
-        <!-- Page-specific content -->
-        {% endblock %}
+        <section class="content">
+            {% block content %}
+            <!-- Content to be replaced by individual pages -->
+            {% endblock %}
+        </section>
     </main>
 
     <footer>
