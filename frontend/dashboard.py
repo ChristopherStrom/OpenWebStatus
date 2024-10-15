@@ -64,10 +64,9 @@ def get_site_data():
 
                 # Construct a list of days with 'up' or 'down' status
                 days_status = []
-                for day_offset in range(365):
+                for day_offset in range(365, -1, -1):  # Start from 364 days ago to today
                     day = time.strftime('%Y-%m-%d', time.gmtime(time.time() - day_offset * 86400))
-                    days_status.append('down' if day in downtime_dates else 'up')
-                days_status.reverse()  # Show oldest first
+                    days_status.append({'status': 'down' if day in downtime_dates else 'up', 'date': day})
 
                 site_data.append((name, purpose, url, days_status))
 

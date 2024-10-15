@@ -1,233 +1,204 @@
-/* General styles for body and container elements */
+/* General Theme Styling */
 body {
-    font-family: Arial, sans-serif;
+    font-family: 'Arial', sans-serif;
     background-color: #f0f2f5;
+    color: #333;
     margin: 0;
     padding: 0;
-    color: #333;
 }
 
-.header {
-    background-color: #007bff;
+header {
+    background-color: #4a90e2;
     color: #fff;
-    padding: 10px 20px;
+    padding: 20px;
     display: flex;
     justify-content: space-between;
     align-items: center;
 }
 
-.logo {
+.header .logo {
     font-size: 1.5em;
     font-weight: bold;
 }
 
-.nav-links ul {
+.header nav {
+    display: flex;
+}
+
+.header .nav-links {
     list-style-type: none;
+    display: flex;
+    gap: 20px;
     padding: 0;
 }
 
-.nav-links li {
+.header .nav-links li {
     display: inline;
-    margin: 0 10px;
 }
 
-.nav-links a {
-    color: white;
+.header .nav-links a {
+    color: #fff;
     text-decoration: none;
-    font-weight: bold;
+    transition: color 0.3s;
+}
+
+.header .nav-links a:hover {
+    color: #d8e9ff;
+}
+
+/* Main Content Area */
+main {
+    padding: 40px;
+    max-width: 1200px;
+    margin: auto;
 }
 
 .tiles-container {
-    display: flex;
-    flex-wrap: wrap;
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
     gap: 20px;
-    padding: 20px;
 }
 
 .tile {
-    background: #fff;
-    border-radius: 8px;
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    background-color: #fff;
+    box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.1);
     padding: 20px;
-    max-width: 300px;
-    width: 100%;
-    text-align: center;
+    border-radius: 8px;
+    transition: transform 0.3s;
 }
 
-.tile .site-name {
+.tile:hover {
+    transform: translateY(-5px);
+}
+
+.site-name {
     font-size: 1.2em;
     font-weight: bold;
     margin-bottom: 10px;
 }
 
 .uptime-grid {
-    display: grid;
-    grid-template-columns: repeat(52, 5px);
-    grid-gap: 3px;
-    margin-top: 15px;
-    justify-content: center;
-}
-
-.uptime-box {
-    width: 12px;
-    height: 12px;
-    border-radius: 2px;
-}
-
-.uptime-box.uptime {
-    background-color: #4caf50; /* Green for uptime */
-}
-
-.uptime-box.downtime {
-    background-color: #f44336; /* Red for downtime */
-}
-
-.uptime-box.disabled {
-    background-color: #ccc; /* Grey for no data */
-}
-
-.footer {
-    background-color: #007bff;
-    color: #fff;
-    text-align: center;
-    padding: 10px 0;
-    margin-top: 20px;
-}
-
-/* General button styling */
-.btn-add-site, .btn-submit {
-    background-color: #007bff;
-    color: white;
-    border: none;
-    padding: 10px 20px;
-    margin: 10px 0;
-    border-radius: 5px;
-    cursor: pointer;
-    font-weight: bold;
-    transition: background-color 0.3s ease;
-}
-
-.btn-add-site:hover, .btn-submit:hover {
-    background-color: #0056b3;
-}
-
-/* Form container */
-.form-container {
-    background: #ffffff;
-    padding: 20px;
-    border-radius: 8px;
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-    margin: 20px 0;
-}
-
-/* Form groups styling */
-.form-group {
-    margin-bottom: 15px;
-}
-
-.form-group label {
-    display: block;
-    font-weight: bold;
-    margin-bottom: 5px;
-}
-
-.form-group input[type="text"],
-.form-group input[type="url"],
-.form-group input[type="number"] {
-    width: 100%;
-    padding: 10px;
-    border: 1px solid #ccc;
-    border-radius: 4px;
-}
-
-/* Sites table styling */
-.sites-table {
-    width: 100%;
-    border-collapse: collapse;
-    margin-top: 20px;
-    background: #fff;
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-}
-
-.sites-table th, .sites-table td {
-    border: 1px solid #ddd;
-    padding: 12px;
-    text-align: left;
-}
-
-.sites-table th {
-    background-color: #007bff;
-    color: white;
-}
-
-.sites-table tr:nth-child(even) {
-    background-color: #f9f9f9;
-}
-
-.sites-table tr:hover {
-    background-color: #f1f1f1;
-}
-
-/* Styles for the tiles and uptime boxes */
-.tiles-container {
     display: flex;
     flex-wrap: wrap;
-    gap: 20px;
-    padding: 20px;
-}
-
-.tile {
-    background-color: #ffffff;
-    border-radius: 8px;
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-    padding: 20px;
-    width: 300px;
-}
-
-.site-name {
-    font-weight: bold;
-    margin-bottom: 10px;
-}
-
-.uptime-grid {
-    display: grid;
-    grid-template-columns: repeat(7, 1fr);
-    gap: 5px;
-    margin-top: 10px;
+    gap: 2px;
+    margin-top: 15px;
 }
 
 .uptime-box {
     width: 20px;
     height: 20px;
-    border-radius: 3px;
-    background-color: #00ff00; /* Green for 'up' */
+    border-radius: 4px;
+    transition: background-color 0.3s;
+}
+
+.uptime-box.uptime {
+    background-color: #76c7c0;
 }
 
 .uptime-box.downtime {
-    background-color: #ff0000; /* Red for 'down' */
+    background-color: #ff6b6b;
 }
 
-/* Styles for the Add Site Form and Button */
-.btn-add-site, .btn-submit {
-    background-color: #007bff;
-    color: white;
+.uptime-box:hover {
+    position: relative;
+}
+
+.uptime-box:hover::after {
+    content: attr(data-date);
+    position: absolute;
+    bottom: 25px;
+    left: 50%;
+    transform: translateX(-50%);
+    background-color: #333;
+    color: #fff;
+    padding: 5px;
+    border-radius: 4px;
+    font-size: 0.8em;
+    white-space: nowrap;
+}
+
+/* Footer Styling */
+footer {
+    background-color: #4a90e2;
+    color: #fff;
+    text-align: center;
+    padding: 20px;
+    margin-top: 40px;
+}
+
+/* Login and General Button Styles */
+button, a.button {
+    background-color: #4a90e2;
+    color: #fff;
     border: none;
     padding: 10px 20px;
-    margin: 10px 0;
-    border-radius: 5px;
+    border-radius: 4px;
     cursor: pointer;
-    font-weight: bold;
-    transition: background-color 0.3s ease;
+    text-decoration: none;
+    transition: background-color 0.3s;
 }
 
-.btn-add-site:hover, .btn-submit:hover {
-    background-color: #0056b3;
+button:hover, a.button:hover {
+    background-color: #357ab8;
 }
 
-.form-container {
-    background: #ffffff;
+form {
+    background-color: #fff;
     padding: 20px;
     border-radius: 8px;
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-    margin: 20px 0;
+    box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.1);
+    max-width: 600px;
+    margin: auto;
 }
+
+label {
+    font-weight: bold;
+}
+
+input, select {
+    width: calc(100% - 20px);
+    padding: 10px;
+    margin-top: 5px;
+    margin-bottom: 20px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+}
+
+input[type="checkbox"] {
+    width: auto;
+}
+
+/* Uptime Grid Horizontal Layout */
+.uptime-grid-horizontal {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    overflow-x: auto;
+    padding: 10px 0;
+}
+
+.uptime-box-horizontal {
+    width: 10px;
+    height: 10px;
+    border-radius: 2px;
+}
+
+.uptime-box-horizontal.uptime {
+    background-color: #76c7c0;
+}
+
+.uptime-box-horizontal.downtime {
+    background-color: #ff6b6b;
+}
+
+.uptime-box-horizontal:hover::after {
+    content: attr(data-date);
+    position: absolute;
+    bottom: 20px;
+    background-color: #333;
+    color: #fff;
+    padding: 5px;
+    border-radius: 4px;
+    font-size: 0.8em;
+    white-space: nowrap;
+} 
