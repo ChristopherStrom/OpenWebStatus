@@ -12,7 +12,7 @@
         <div class="logo">Site Monitoring</div>
         <nav>
             <ul class="nav-links">
-                {% if session['logged_in'] %}
+                {% if session.get('logged_in') %}
                     <li><a href="{{ url_for('logout') }}">Logout</a></li>
                     <li><a href="{{ url_for('settings') }}">Settings</a></li>
                 {% else %}
