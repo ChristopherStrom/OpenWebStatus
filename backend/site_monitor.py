@@ -112,6 +112,33 @@ def check_db_tables():
         logging.error(f"Error during database initialization: {e}")
         raise
 
+def insert_default_site():
+    """Insert google.com as the default site if not already present."""
+    try:
+        conn = sqlite3.connect(DATABASE)
+        cursor = conn.cursor()
+
+        # Check if the default google.com site exists
+        cursor.execute("SELECT COUNT(*) FROM sites WHERE url = 'https://www.google.com'")
+        count = cursor.fetchone()[0]
+
+        if count == 0:
+            logging.info("Inserting default site: google.com")
+            # Insert default site with a 5-minute check frequency
+            cursor.execute(
+                "INSERT INTO sites (name, purpose, url, frequency, enabled) VALUES (?, ?, ?, ?, ?)",
+                ('Google', 'Default site monitoring', 'https://www.google.com', 300, 1)
+            )
+            conn.commit()
+            logging.info("Default site google.com inserted.")
+        else:
+            logging.info("Default site google.com already exists, skipping insertion.")
+
+        conn.close()
+    except Exception as e:
+        logging.error(f"Error inserting default site: {e}")
+        raise
+
 def monitor_sites():
     """Monitor the sites in the database and log downtime."""
     while True:
@@ -150,13 +177,17 @@ def log_downtime(site_id):
 
 if __name__ == '__main__':
     logging.info("Starting site monitoring...")
-    
+
     try:
         # Ensure tables are created and the admin user is seeded with a default password
         check_db_tables()
         seed_admin_user()
+
+        # Insert default google.com site for tracking
+        insert_default_site()
+
     except Exception as e:
-        logging.error(f"Failed during DB initialization: {e}")
+        logging.error(f"Failed during DB initialization or site insertion: {e}")
         exit(1)
 
     # Start the site monitoring process
