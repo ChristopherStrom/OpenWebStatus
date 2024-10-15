@@ -39,6 +39,7 @@ logging.basicConfig(filename=log_file, level=logging.DEBUG,
 import sys
 
 def init_db():
+    logging.info("Starting database initialization...")
     try:
         backend_folder = os.path.dirname(DATABASE)
         if not os.path.exists(backend_folder):
