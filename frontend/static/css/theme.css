@@ -218,7 +218,7 @@ input[type="checkbox"] {
 .uptime-box-horizontal:hover::after {
     content: attr(data-date);
     position: absolute;
-    bottom: 25px;
+    top: 25px; /* Display tooltip below the element to avoid cutting off */
     left: 50%;
     transform: translateX(-50%);
     background-color: #333;
@@ -228,4 +228,10 @@ input[type="checkbox"] {
     font-size: 0.8em;
     white-space: nowrap;
     z-index: 100;
+}
+
+/* Special case when the tooltip is on the top row */
+.week-column:first-child .uptime-box-horizontal:hover::after {
+    top: auto;
+    bottom: 25px; /* Position the tooltip above the element */
 }
