@@ -172,9 +172,10 @@ def monitor_sites():
             if not table_exists:
                 logging.error("Table 'sites' does not exist. Exiting site monitoring.")
                 conn.close()
+                logging.info("App is stopping due to missing 'sites' table.")
                 return  # Stop monitoring if table doesn't exist
 
-            # Now we know the 'sites' table exists, query for sites
+            # Query for enabled sites and start monitoring them
             cursor.execute("SELECT id, url, frequency FROM sites WHERE enabled=1")
             sites = cursor.fetchall()
 
@@ -190,7 +191,6 @@ def monitor_sites():
         except Exception as e:
             logging.error(f"Error in site monitoring: {e}")
             time.sleep(10)  # Delay before retrying
-
 
 # Check the status of each site and log downtime if needed
 def check_site_status(site_id, url, frequency):
@@ -278,8 +278,15 @@ def add_site():
 if __name__ == '__main__':
     # Ensure the default and logs folder exist
     ensure_default_folders()
-    
+
     # Initialize the database and seed admin user if necessary
-    init_db()
-    seed_admin_user()
-    app.run(port=8080)
+    try:
+        init_db()  # Make sure the DB is initialized successfully
+        seed_admin_user()  # Seed admin if necessary
+        logging.info("Starting site monitoring...")
+        threading.Thread(target=monitor_sites, daemon=True).start()  # Start monitoring in a separate thread
+        app.run(port=8080)
+    except Exception as e:
+        logging.error(f"Failed to initialize application: {e}")
+        logging.info("App is stopping due to initialization failure.")
+        sys.exit(1)  # Exit if initialization fails
