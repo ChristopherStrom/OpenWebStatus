@@ -1,0 +1,1 @@
+Default admin password created after first run of services
