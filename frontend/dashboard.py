@@ -35,9 +35,19 @@ logging.basicConfig(filename=log_file, level=logging.DEBUG,
                     format='%(asctime)s - %(levelname)s - %(message)s')
 
 # Function to create database and uptime/user tables if they don't exist
+# Function to create database and uptime/user tables if they don't exist
 def init_db():
     try:
+        # Check if backend folder exists, create if it doesn't
+        backend_folder = os.path.dirname(DATABASE)
+        if not os.path.exists(backend_folder):
+            os.makedirs(backend_folder)
+            logging.info(f"Created backend folder: {backend_folder}")
+
+        # Connect to the database and create tables if they don't exist
         conn = sqlite3.connect(DATABASE)
+        logging.info(f"Connected to the database at: {DATABASE}")  # Log the path to the database
+        
         cursor = conn.cursor()
 
         # Create the uptime table if it doesn't exist
@@ -60,7 +70,7 @@ def init_db():
 
         conn.commit()
         conn.close()
-        logging.info('Database initialized successfully.')
+        logging.info('Database and tables initialized successfully.')
     except Exception as e:
         logging.error(f"Error during database initialization: {e}")
 
