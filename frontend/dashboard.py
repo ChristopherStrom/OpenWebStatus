@@ -35,7 +35,7 @@ def get_all_sites():
     try:
         with sqlite3.connect(DATABASE) as conn:
             cursor = conn.cursor()
-            cursor.execute("SELECT * FROM sites")
+            cursor.execute("SELECT id, name, purpose, url, frequency, enabled FROM sites")
             sites = cursor.fetchall()
         return sites
     except Exception as e:
@@ -68,7 +68,7 @@ def get_site_data():
                     days_status.append('down' if day in downtime_dates else 'up')
                 days_status.reverse()  # Show oldest first
 
-                site_data.append((name, purpose, url, days_status))
+                site_data.append((site_id, name, purpose, url, days_status))
 
         return site_data
     except Exception as e:
