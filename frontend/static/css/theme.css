@@ -218,7 +218,7 @@ input[type="checkbox"] {
 .uptime-box-horizontal:hover::after {
     content: attr(data-date);
     position: absolute;
-    top: 25px; /* Display tooltip below the element to avoid cutting off */
+    top: 25px; /* Default to display tooltip below the element */
     left: 50%;
     transform: translateX(-50%);
     background-color: #333;
@@ -230,8 +230,27 @@ input[type="checkbox"] {
     z-index: 100;
 }
 
-/* Special case when the tooltip is on the top row */
+/* Special case for tooltips in the top row */
 .week-column:first-child .uptime-box-horizontal:hover::after {
     top: auto;
-    bottom: 25px; /* Position the tooltip above the element */
+    bottom: 25px; /* Position the tooltip above the element to avoid cutting off at the top */
+}
+
+/* Special case for tooltips in the leftmost row */
+.week-column .uptime-box-horizontal:first-child:hover::after {
+    left: 0; /* Align to the left to avoid cutting off */
+    transform: translateX(0);
+}
+
+/* Special case for tooltips in the bottom row */
+.week-column:last-child .uptime-box-horizontal:hover::after {
+    top: auto;
+    bottom: 25px; /* Position tooltip above the element to avoid being cut off at the bottom */
+}
+
+/* Special case for tooltips in the rightmost row */
+.week-column .uptime-box-horizontal:last-child:hover::after {
+    left: auto;
+    right: 0; /* Align tooltip to the right to avoid cutting off at the right edge */
+    transform: translateX(0);
 }
