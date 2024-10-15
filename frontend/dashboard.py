@@ -154,6 +154,32 @@ def settings():
     sites = get_all_sites()
     return render_template('settings.html', sites=sites)
 
+# Add Site page
+@app.route('/add_site', methods=['GET', 'POST'])
+def add_site():
+    if 'logged_in' not in session:
+        return redirect(url_for('login'))
+
+    if request.method == 'POST':
+        name = request.form['name']
+        purpose = request.form['purpose']
+        url = request.form['url']
+        frequency = int(request.form['frequency'])
+        enabled = 1 if 'enabled' in request.form else 0
+
+        try:
+            with sqlite3.connect(DATABASE) as conn:
+                cursor = conn.cursor()
+                cursor.execute("INSERT INTO sites (name, purpose, url, frequency, enabled) VALUES (?, ?, ?, ?, ?)",
+                               (name, purpose, url, frequency, enabled))
+                conn.commit()
+                logging.info(f"Added new site: {name}")
+        except Exception as e:
+            logging.error(f"Error adding site: {e}")
+        return redirect(url_for('index'))
+
+    return render_template('add_site.html')
+
 # Ensure the default and logs folder exist
 ensure_default_folders()
 
