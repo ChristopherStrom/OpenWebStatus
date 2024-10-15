@@ -9,7 +9,7 @@ import hashlib
 app = Flask(__name__)
 app.secret_key = 'your_secret_key'  # Replace with your secret key
 
-DATABASE = '../backend/uptime.db'
+DATABASE = 'uptime.db'
 
 # Ensure the 'default' and 'default/logs' folders exist
 def ensure_default_folders():
