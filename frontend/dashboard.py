@@ -64,8 +64,15 @@ def seed_admin_user():
         cursor.execute("INSERT INTO users (username, password) VALUES (?, ?)", ('admin', hashed_password))
         conn.commit()
 
-        # Save the password to a file
-        with open('default_password.txt', 'w') as f:
+        # Define the path for the default password file
+        default_folder = os.path.join(os.path.dirname(os.path.abspath(__file__)), '../default')
+        if not os.path.exists(default_folder):
+            os.makedirs(default_folder)
+
+        password_file_path = os.path.join(default_folder, 'default_password.txt')
+
+        # Save the password to the file
+        with open(password_file_path, 'w') as f:
             f.write(f"Default admin password: {random_password}")
 
     conn.close()
