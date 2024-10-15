@@ -133,7 +133,7 @@ def index():
     data = get_site_data()
     return render_template('index.html', data=data)
 
-# Settings page to add and manage sites
+# Settings page to add, manage, and edit sites
 @app.route('/settings', methods=['GET', 'POST'])
 def settings():
     if 'logged_in' not in session:
@@ -159,6 +159,44 @@ def settings():
 
     sites = get_all_sites()
     return render_template('settings.html', sites=sites)
+
+# Route to edit a site
+@app.route('/edit_site/<int:site_id>', methods=['GET', 'POST'])
+def edit_site(site_id):
+    if 'logged_in' not in session:
+        return redirect(url_for('login'))
+
+    if request.method == 'POST':
+        name = request.form['name']
+        purpose = request.form['purpose']
+        url = request.form['url']
+        frequency = int(request.form['frequency'])
+        enabled = 1 if 'enabled' in request.form else 0
+
+        try:
+            with sqlite3.connect(DATABASE) as conn:
+                cursor = conn.cursor()
+                cursor.execute("""
+                    UPDATE sites SET name = ?, purpose = ?, url = ?, frequency = ?, enabled = ?
+                    WHERE id = ?
+                """, (name, purpose, url, frequency, enabled, site_id))
+                conn.commit()
+                logging.info(f"Updated site with id: {site_id}")
+        except Exception as e:
+            logging.error(f"Error updating site with id {site_id}: {e}")
+        return redirect(url_for('settings'))
+
+    # Fetch site data for editing
+    try:
+        with sqlite3.connect(DATABASE) as conn:
+            cursor = conn.cursor()
+            cursor.execute("SELECT * FROM sites WHERE id = ?", (site_id,))
+            site = cursor.fetchone()
+    except Exception as e:
+        logging.error(f"Error fetching site with id {site_id} for editing: {e}")
+        return redirect(url_for('settings'))
+
+    return render_template('edit_site.html', site=site)
 
 # Add Site page
 @app.route('/add_site', methods=['GET', 'POST'])
