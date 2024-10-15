@@ -285,11 +285,16 @@ if __name__ == '__main__':
 
     # Initialize the database and seed admin user if necessary
     try:
-        init_db()  # Make sure the DB is initialized successfully
+        init_db()  # Ensure database and tables are properly created
         seed_admin_user()  # Seed admin if necessary
-        logging.info("Starting site monitoring...")
-        threading.Thread(target=monitor_sites, daemon=True).start()  # Start monitoring in a separate thread
+
+        # Only start monitoring after DB initialization is confirmed
+        logging.info("Starting site monitoring after DB check is complete.")
+        threading.Thread(target=monitor_sites, daemon=True).start()
+
+        # Start Flask app
         app.run(port=8080)
+
     except Exception as e:
         logging.error(f"Failed to initialize application: {e}")
         logging.info("App is stopping due to initialization failure.")
