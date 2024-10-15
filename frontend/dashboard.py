@@ -8,18 +8,20 @@ DATABASE = '../backend/uptime.db'
 
 # Function to create database and uptime table if it doesn't exist
 def init_db():
-    if not os.path.exists(DATABASE):
-        conn = sqlite3.connect(DATABASE)
-        cursor = conn.cursor()
-        cursor.execute('''
-            CREATE TABLE IF NOT EXISTS uptime (
-                id INTEGER PRIMARY KEY AUTOINCREMENT,
-                timestamp TEXT,
-                status TEXT
-            )
-        ''')
-        conn.commit()
-        conn.close()
+    conn = sqlite3.connect(DATABASE)
+    cursor = conn.cursor()
+    
+    # Create the uptime table if it doesn't exist
+    cursor.execute('''
+        CREATE TABLE IF NOT EXISTS uptime (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            timestamp TEXT,
+            status TEXT
+        )
+    ''')
+    
+    conn.commit()
+    conn.close()
 
 # Function to seed database with sample data if no records exist
 def seed_db():
@@ -39,6 +41,14 @@ def seed_db():
 def get_daily_uptime():
     conn = sqlite3.connect(DATABASE)
     cursor = conn.cursor()
+    
+    # Check if the uptime table exists, and if not, create it
+    cursor.execute("SELECT name FROM sqlite_master WHERE type='table' AND name='uptime'")
+    table_exists = cursor.fetchone()
+    
+    if table_exists is None:
+        init_db()  # Create the table if it doesn't exist
+    
     cursor.execute("SELECT timestamp, status FROM uptime")
     results = cursor.fetchall()
     conn.close()
