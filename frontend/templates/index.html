@@ -3,19 +3,18 @@
 {% block title %}Dashboard{% endblock %}
 
 {% block content %}
-    <div class="card">
-        <h2>Website Uptime Status</h2>
-        <table>
-            <tr>
-                <th>Site Name</th>
-                <th>Uptime (%)</th>
-            </tr>
-            {% for site, uptime in data %}
-                <tr>
-                    <td>{{ site.name }}</td>
-                    <td>{{ uptime }}%</td>
-                </tr>
-            {% endfor %}
-        </table>
+    <h1>Site Monitoring Dashboard</h1>
+
+    <div class="tiles-container">
+        {% for site in data %}
+        <div class="tile">
+            <div class="site-name">{{ site[0] }}</div>
+            <div class="uptime-grid">
+                {% for day in site[1] %}
+                <div class="uptime-box {{ 'uptime' if day == 'up' else 'downtime' }}"></div>
+                {% endfor %}
+            </div>
+        </div>
+        {% endfor %}
     </div>
 {% endblock %}

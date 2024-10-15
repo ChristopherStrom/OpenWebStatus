@@ -3,33 +3,33 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>{% block title %}OpenWebStatus{% endblock %}</title>
-    <link href="/static/theme.css" rel="stylesheet">
+    <title>{% block title %}Dashboard{% endblock %}</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/theme.css') }}">
 </head>
 <body>
-    <header>
-        <div class="logo">OpenWebStatus Dashboard</div>
+
+    <header class="header">
+        <div class="logo">Site Monitoring</div>
         <nav>
-            <a href="/" class="nav-link">Dashboard</a>
-            {% if session.logged_in %}
-                <a href="/settings" class="nav-link">Settings</a>
-                <a href="/logout" class="nav-link logout-button">Logout</a>
-            {% else %}
-                <a href="/login" class="nav-link login-button">Login</a>
-            {% endif %}
+            <ul class="nav-links">
+                {% if session['logged_in'] %}
+                    <li><a href="{{ url_for('logout') }}">Logout</a></li>
+                    <li><a href="{{ url_for('settings') }}">Settings</a></li>
+                {% else %}
+                    <li><a href="{{ url_for('login') }}">Login</a></li>
+                {% endif %}
+            </ul>
         </nav>
     </header>
 
-    <main>
-        <section class="content">
-            {% block content %}
-            <!-- Content to be replaced by individual pages -->
-            {% endblock %}
-        </section>
+    <main class="content">
+        {% block content %}
+        {% endblock %}
     </main>
 
-    <footer>
-        <p>&copy; 2024 OpenWebStatus</p>
+    <footer class="footer">
+        <p>© 2024 Site Monitoring Dashboard</p>
     </footer>
+
 </body>
 </html>

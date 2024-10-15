@@ -76,22 +76,30 @@ def seed_admin_user():
     except Exception as e:
         logging.error(f"Error during admin user seeding: {e}")
 
-# Fetch downtime data from the database
-def get_downtime_data():
+# Fetch site data for displaying uptime/downtime in dashboard
+def get_site_data():
     try:
         conn = sqlite3.connect(DATABASE)
         cursor = conn.cursor()
         cursor.execute("""
-            SELECT sites.name, downtime.down_at 
-            FROM downtime 
-            JOIN sites ON sites.id = downtime.site_id 
-            ORDER BY downtime.down_at DESC
+            SELECT name, (
+                SELECT group_concat(
+                    CASE
+                        WHEN EXISTS (SELECT 1 FROM downtime WHERE downtime.site_id = sites.id AND date(downtime.down_at) = day) THEN 'down'
+                        ELSE 'up'
+                    END, ','
+                )
+                FROM (
+                    SELECT date('now', '-' || (365 - rowid) || ' days') AS day
+                    FROM sqlite_sequence WHERE rowid <= 365
+                )
+            ) AS status FROM sites
         """)
         results = cursor.fetchall()
         conn.close()
         return results
     except Exception as e:
-        logging.error(f"Error fetching downtime data: {e}")
+        logging.error(f"Error fetching site data: {e}")
         return []
 
 # Login route
@@ -133,8 +141,8 @@ def index():
     if 'logged_in' not in session:
         return redirect(url_for('login'))
 
-    # Get downtime data to display in the dashboard
-    data = get_downtime_data()
+    # Get site data to display in the dashboard
+    data = get_site_data()
     return render_template('index.html', data=data)
 
 # Settings page to add and manage sites
