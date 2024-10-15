@@ -15,13 +15,9 @@ def ensure_default_folders():
     default_folder = os.path.join(os.path.dirname(os.path.abspath(__file__)), '../default')
     log_folder = os.path.join(default_folder, 'logs')
 
-    if not os.path.exists(default_folder):
-        os.makedirs(default_folder)
-        logging.info(f"Created default folder: {default_folder}")
-
-    if not os.path.exists(log_folder):
-        os.makedirs(log_folder)
-        logging.info(f"Created logs folder: {log_folder}")
+    os.makedirs(default_folder, exist_ok=True)
+    os.makedirs(log_folder, exist_ok=True)
+    logging.info(f"Default and logs folders ensured at: {default_folder}, {log_folder}")
 
     return log_folder
 
@@ -37,11 +33,10 @@ logging.basicConfig(
 # Fetch all sites from the database
 def get_all_sites():
     try:
-        conn = sqlite3.connect(DATABASE)
-        cursor = conn.cursor()
-        cursor.execute("SELECT * FROM sites")
-        sites = cursor.fetchall()
-        conn.close()
+        with sqlite3.connect(DATABASE) as conn:
+            cursor = conn.cursor()
+            cursor.execute("SELECT * FROM sites")
+            sites = cursor.fetchall()
         return sites
     except Exception as e:
         logging.error(f"Error fetching sites: {e}")
@@ -50,41 +45,31 @@ def get_all_sites():
 # Fetch site data for displaying uptime/downtime in dashboard
 def get_site_data():
     try:
-        conn = sqlite3.connect(DATABASE)
-        cursor = conn.cursor()
-        cursor.execute("""
-            SELECT id, name, purpose, url FROM sites
-        """)
-        sites = cursor.fetchall()
+        with sqlite3.connect(DATABASE) as conn:
+            cursor = conn.cursor()
+            cursor.execute("SELECT id, name, purpose, url FROM sites")
+            sites = cursor.fetchall()
 
-        site_data = []
-        for site in sites:
-            site_id = site[0]
-            name = site[1]
-            purpose = site[2]
-            url = site[3]
-            
-            # Get uptime data for the past 365 days
-            cursor.execute("""
-                SELECT date(down_at) FROM downtime
-                WHERE site_id = ? AND down_at >= date('now', '-365 days')
-                ORDER BY down_at ASC
-            """, (site_id,))
-            downtime_dates = [row[0] for row in cursor.fetchall()]
+            site_data = []
+            for site in sites:
+                site_id, name, purpose, url = site
+                # Get uptime data for the past 365 days
+                cursor.execute("""
+                    SELECT date(down_at) FROM downtime
+                    WHERE site_id = ? AND down_at >= date('now', '-365 days')
+                    ORDER BY down_at ASC
+                """, (site_id,))
+                downtime_dates = [row[0] for row in cursor.fetchall()]
 
-            # Construct a list of days with 'up' or 'down' status
-            days_status = []
-            for day_offset in range(365):
-                day = (time.strftime('%Y-%m-%d', time.gmtime(time.time() - day_offset * 86400)))
-                if day in downtime_dates:
-                    days_status.append('down')
-                else:
-                    days_status.append('up')
-            days_status.reverse()  # Show oldest first
+                # Construct a list of days with 'up' or 'down' status
+                days_status = []
+                for day_offset in range(365):
+                    day = time.strftime('%Y-%m-%d', time.gmtime(time.time() - day_offset * 86400))
+                    days_status.append('down' if day in downtime_dates else 'up')
+                days_status.reverse()  # Show oldest first
 
-            site_data.append((name, purpose, url, days_status))
+                site_data.append((name, purpose, url, days_status))
 
-        conn.close()
         return site_data
     except Exception as e:
         logging.error(f"Error fetching site data: {e}")
@@ -99,54 +84,19 @@ def generate_random_password(length=10):
 def hash_password(password):
     return hashlib.sha256(password.encode()).hexdigest()
 
-# Function to seed database with an admin user if no users exist
-def seed_admin_user():
-    try:
-        conn = sqlite3.connect(DATABASE)
-        cursor = conn.cursor()
-
-        # Check if any users exist
-        cursor.execute("SELECT COUNT(*) FROM users")
-        count = cursor.fetchone()[0]
-        if count == 0:
-            # Generate a random password
-            random_password = generate_random_password()
-
-            # Hash the password
-            hashed_password = hash_password(random_password)
-
-            # Insert the default admin user
-            cursor.execute("INSERT INTO users (username, password) VALUES (?, ?)", ('admin', hashed_password))
-            conn.commit()
-
-            # Define the path for the default password file
-            default_folder = os.path.join(os.path.dirname(os.path.abspath(__file__)), '../default')
-            password_file_path = os.path.join(default_folder, 'default_password.txt')
-
-            # Save the password to the file
-            with open(password_file_path, 'w') as f:
-                f.write(f"Default admin password: {random_password}")
-
-            logging.info('Admin user created and password saved.')
-        conn.close()
-    except Exception as e:
-        logging.error(f"Error during admin user seeding: {e}")
-
 # Login route
 @app.route('/login', methods=['GET', 'POST'])
 def login():
     if request.method == 'POST':
         username = request.form['username']
         password = request.form['password']
-
         hashed_password = hash_password(password)
 
         try:
-            conn = sqlite3.connect(DATABASE)
-            cursor = conn.cursor()
-            cursor.execute("SELECT * FROM users WHERE username=? AND password=?", (username, hashed_password))
-            user = cursor.fetchone()
-            conn.close()
+            with sqlite3.connect(DATABASE) as conn:
+                cursor = conn.cursor()
+                cursor.execute("SELECT * FROM users WHERE username=? AND password=?", (username, hashed_password))
+                user = cursor.fetchone()
 
             if user:
                 session['logged_in'] = True
@@ -189,13 +139,12 @@ def settings():
         enabled = 1 if 'enabled' in request.form else 0
 
         try:
-            conn = sqlite3.connect(DATABASE)
-            cursor = conn.cursor()
-            cursor.execute("INSERT INTO sites (name, purpose, url, frequency, enabled) VALUES (?, ?, ?, ?, ?)",
-                           (name, purpose, url, frequency, enabled))
-            conn.commit()
-            conn.close()
-            logging.info(f"Added new site: {name}")
+            with sqlite3.connect(DATABASE) as conn:
+                cursor = conn.cursor()
+                cursor.execute("INSERT INTO sites (name, purpose, url, frequency, enabled) VALUES (?, ?, ?, ?, ?)",
+                               (name, purpose, url, frequency, enabled))
+                conn.commit()
+                logging.info(f"Added new site: {name}")
         except Exception as e:
             logging.error(f"Error adding site: {e}")
         return redirect(url_for('settings'))
@@ -203,12 +152,14 @@ def settings():
     sites = get_all_sites()
     return render_template('settings.html', sites=sites)
 
+# Ensure the default and logs folder exist
+ensure_default_folders()
+
+# Check if the database exists
+if not os.path.exists(DATABASE):
+    logging.error("Database does not exist. Application will not run.")
+    exit(1)
+
+# Start the Flask app
 if __name__ == '__main__':
-    # Ensure the default and logs folder exist
-    ensure_default_folders()
-
-    # Initialize the database and seed admin user if necessary
-    seed_admin_user()
-
-    # Start the Flask app
-    app.run(port=8080)
+    app.run()
