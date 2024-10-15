@@ -1,13 +1,13 @@
 import os
 import logging
 import sqlite3
+import hashlib
 import random
 import string
-import hashlib
 from flask import Flask, render_template, request, redirect, url_for, session
 
 app = Flask(__name__)
-app.secret_key = 'your_secret_key'  # Replace with your secret key
+app.secret_key = 'your_secret_key'  # Replace with your actual secret key
 DATABASE = os.path.join(os.path.dirname(os.path.abspath(__file__)), '../backend/uptime.db')
 
 # Ensure the 'default' and 'default/logs' folders exist
@@ -34,21 +34,64 @@ logging.basicConfig(
     format='%(asctime)s - %(levelname)s - %(message)s'
 )
 
+# Function to generate a random password
+def generate_random_password(length=10):
+    characters = string.ascii_letters + string.digits + string.punctuation
+    return ''.join(random.choice(characters) for _ in range(length))
+
 # Function to hash a password
 def hash_password(password):
     return hashlib.sha256(password.encode()).hexdigest()
 
-# Fetch uptime data for display on the index page
-def get_daily_uptime():
+# Function to seed database with an admin user if no users exist
+def seed_admin_user():
     try:
         conn = sqlite3.connect(DATABASE)
         cursor = conn.cursor()
-        cursor.execute("SELECT timestamp, status FROM uptime")
+
+        # Check if any users exist
+        cursor.execute("SELECT COUNT(*) FROM users")
+        count = cursor.fetchone()[0]
+        if count == 0:
+            # Generate a random password
+            random_password = generate_random_password()
+
+            # Hash the password
+            hashed_password = hash_password(random_password)
+
+            # Insert the default admin user
+            cursor.execute("INSERT INTO users (username, password) VALUES (?, ?)", ('admin', hashed_password))
+            conn.commit()
+
+            # Define the path for the default password file
+            default_folder = os.path.join(os.path.dirname(os.path.abspath(__file__)), '../default')
+            password_file_path = os.path.join(default_folder, 'default_password.txt')
+
+            # Save the password to the file
+            with open(password_file_path, 'w') as f:
+                f.write(f"Default admin password: {random_password}")
+
+            logging.info('Admin user created and password saved.')
+        conn.close()
+    except Exception as e:
+        logging.error(f"Error during admin user seeding: {e}")
+
+# Fetch downtime data from the database
+def get_downtime_data():
+    try:
+        conn = sqlite3.connect(DATABASE)
+        cursor = conn.cursor()
+        cursor.execute("""
+            SELECT sites.name, downtime.down_at 
+            FROM downtime 
+            JOIN sites ON sites.id = downtime.site_id 
+            ORDER BY downtime.down_at DESC
+        """)
         results = cursor.fetchall()
         conn.close()
         return results
     except Exception as e:
-        logging.error(f"Error fetching uptime data: {e}")
+        logging.error(f"Error fetching downtime data: {e}")
         return []
 
 # Login route
@@ -84,20 +127,24 @@ def logout():
     session.pop('logged_in', None)
     return redirect(url_for('login'))
 
-# Index route (displays uptime data)
+# Home page (dashboard)
 @app.route('/')
 def index():
-    data = get_daily_uptime()
+    if 'logged_in' not in session:
+        return redirect(url_for('login'))
+
+    # Get downtime data to display in the dashboard
+    data = get_downtime_data()
     return render_template('index.html', data=data)
 
-# Settings route
+# Settings page to add and manage sites
 @app.route('/settings')
 def settings():
     if 'logged_in' not in session:
         return redirect(url_for('login'))
     return render_template('settings.html')
 
-# Add site route (handles adding a new site)
+# Add a new site
 @app.route('/add_site', methods=['POST'])
 def add_site():
     name = request.form['name']
@@ -113,11 +160,17 @@ def add_site():
                        (name, purpose, url, frequency, enabled))
         conn.commit()
         conn.close()
+        logging.info(f"Added new site: {name}")
     except Exception as e:
         logging.error(f"Error adding site: {e}")
     return redirect(url_for('settings'))
 
-# Run the Flask app
 if __name__ == '__main__':
-    logging.info("Starting the web application...")
+    # Ensure the default and logs folder exist
+    ensure_default_folders()
+
+    # Initialize the database and seed admin user if necessary
+    seed_admin_user()
+
+    # Start the Flask app
     app.run(port=8080)
