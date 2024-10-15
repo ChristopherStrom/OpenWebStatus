@@ -4,7 +4,24 @@
 
 {% block content %}
     <div class="card">
-        <h2>Settings</h2>
-        <p>Modify your settings here to configure the OpenWebStatus dashboard.</p>
+        <h2>Add Site to Monitor</h2>
+        <form method="POST" action="/add_site">
+            <label for="name">Site Name:</label>
+            <input type="text" id="name" name="name" required><br>
+
+            <label for="purpose">Purpose:</label>
+            <input type="text" id="purpose" name="purpose" required><br>
+
+            <label for="url">URL:</label>
+            <input type="url" id="url" name="url" required><br>
+
+            <label for="frequency">Check Frequency (seconds):</label>
+            <input type="number" id="frequency" name="frequency" min="10" required><br>
+
+            <label for="enabled">Enabled:</label>
+            <input type="checkbox" id="enabled" name="enabled"><br>
+
+            <input type="submit" value="Add Site">
+        </form>
     </div>
 {% endblock %}

@@ -1,14 +1,16 @@
 import os
 import logging
-from flask import Flask, render_template, request, redirect, url_for, session
+import threading
+import time
+import requests
 import sqlite3
 import random
 import string
 import hashlib
+from flask import Flask, render_template, request, redirect, url_for, session
 
 app = Flask(__name__)
 app.secret_key = 'your_secret_key'  # Replace with your secret key
-
 DATABASE = os.path.join(os.path.dirname(os.path.abspath(__file__)), '../backend/uptime.db')
 
 # Ensure the 'default' and 'default/logs' folders exist
@@ -16,7 +18,6 @@ def ensure_default_folders():
     default_folder = os.path.join(os.path.dirname(os.path.abspath(__file__)), '../default')
     log_folder = os.path.join(default_folder, 'logs')
 
-    # Create the folders if they don't exist
     if not os.path.exists(default_folder):
         os.makedirs(default_folder)
         logging.info(f"Created default folder: {default_folder}")
@@ -28,28 +29,24 @@ def ensure_default_folders():
     return log_folder
 
 # Set up logging
-log_folder = ensure_default_folders()  # Ensure the folder is created
+log_folder = ensure_default_folders()
 log_file = os.path.join(log_folder, 'app.log')
 
 logging.basicConfig(filename=log_file, level=logging.DEBUG,
                     format='%(asctime)s - %(levelname)s - %(message)s')
 
-# Function to create database and uptime/user tables if they don't exist
 def init_db():
     try:
-        # Ensure the backend folder exists, create if it doesn't
         backend_folder = os.path.dirname(DATABASE)
         if not os.path.exists(backend_folder):
             os.makedirs(backend_folder)
             logging.info(f"Created backend folder: {backend_folder}")
 
-        # Connect to the database and create tables
         conn = sqlite3.connect(DATABASE)
         logging.info(f"Connected to the database at: {DATABASE}")
-        
         cursor = conn.cursor()
 
-        # Create the uptime table if it doesn't exist
+        # Create uptime table
         cursor.execute('''
             CREATE TABLE IF NOT EXISTS uptime (
                 id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -58,12 +55,33 @@ def init_db():
             )
         ''')
 
-        # Create the users table if it doesn't exist
+        # Create users table
         cursor.execute('''
             CREATE TABLE IF NOT EXISTS users (
                 id INTEGER PRIMARY KEY AUTOINCREMENT,
                 username TEXT,
                 password TEXT
+            )
+        ''')
+
+        # Create sites table
+        cursor.execute('''
+            CREATE TABLE IF NOT EXISTS sites (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                name TEXT,
+                purpose TEXT,
+                url TEXT,
+                frequency INTEGER,
+                enabled INTEGER
+            )
+        ''')
+
+        # Create downtime table
+        cursor.execute('''
+            CREATE TABLE IF NOT EXISTS downtime (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                site_id INTEGER,
+                down_at TEXT
             )
         ''')
 
@@ -115,18 +133,44 @@ def seed_admin_user():
     except Exception as e:
         logging.error(f"Error during admin user seeding: {e}")
 
-# Fetch uptime data
-def get_daily_uptime():
+# Monitor sites in the background
+def monitor_sites():
+    while True:
+        try:
+            conn = sqlite3.connect(DATABASE)
+            cursor = conn.cursor()
+            cursor.execute("SELECT id, url, frequency FROM sites WHERE enabled=1")
+            sites = cursor.fetchall()
+
+            for site_id, url, frequency in sites:
+                threading.Thread(target=check_site_status, args=(site_id, url, frequency)).start()
+
+            conn.close()
+            time.sleep(10)  # Recheck every 10 seconds for new sites
+        except Exception as e:
+            logging.error(f"Error in site monitoring: {e}")
+
+# Check the status of each site and log downtime if needed
+def check_site_status(site_id, url, frequency):
     try:
-        conn = sqlite3.connect(DATABASE)
-        cursor = conn.cursor()
-        cursor.execute("SELECT timestamp, status FROM uptime")
-        results = cursor.fetchall()
-        conn.close()
-        return results
-    except Exception as e:
-        logging.error(f"Error fetching uptime data: {e}")
-        return []
+        response = requests.get(url, timeout=10)
+        if response.status_code != 200:
+            log_downtime(site_id)
+    except requests.RequestException:
+        log_downtime(site_id)
+
+    time.sleep(frequency)
+
+# Log downtime if site is down
+def log_downtime(site_id):
+    conn = sqlite3.connect(DATABASE)
+    cursor = conn.cursor()
+    cursor.execute("INSERT INTO downtime (site_id, down_at) VALUES (?, ?)", (site_id, time.strftime('%Y-%m-%d %H:%M:%S')))
+    conn.commit()
+    conn.close()
+
+# Start the site monitoring task in a background thread
+threading.Thread(target=monitor_sites, daemon=True).start()
 
 @app.route('/login', methods=['GET', 'POST'])
 def login():
@@ -169,6 +213,25 @@ def settings():
     if 'logged_in' not in session:
         return redirect(url_for('login'))
     return render_template('settings.html')
+
+@app.route('/add_site', methods=['POST'])
+def add_site():
+    name = request.form['name']
+    purpose = request.form['purpose']
+    url = request.form['url']
+    frequency = int(request.form['frequency'])
+    enabled = 1 if 'enabled' in request.form else 0
+
+    try:
+        conn = sqlite3.connect(DATABASE)
+        cursor = conn.cursor()
+        cursor.execute("INSERT INTO sites (name, purpose, url, frequency, enabled) VALUES (?, ?, ?, ?, ?)",
+                       (name, purpose, url, frequency, enabled))
+        conn.commit()
+        conn.close()
+    except Exception as e:
+        logging.error(f"Error adding site: {e}")
+    return redirect(url_for('settings'))
 
 if __name__ == '__main__':
     # Ensure the default and logs folder exist

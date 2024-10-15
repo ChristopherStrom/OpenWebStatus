@@ -5,16 +5,17 @@
 {% block content %}
     <div class="card">
         <h2>Website Uptime Status</h2>
-        <div class="status-blocks">
-            {% for timestamp, status in data %}
-                <div class="status-block {% if status == 'up' %}status-up{% else %}status-down{% endif %}">
-                    {% if status == 'up' %}
-                        UP - {{ timestamp }}
-                    {% else %}
-                        DOWN - {{ timestamp }}
-                    {% endif %}
-                </div>
+        <table>
+            <tr>
+                <th>Site Name</th>
+                <th>Uptime (%)</th>
+            </tr>
+            {% for site, uptime in data %}
+                <tr>
+                    <td>{{ site.name }}</td>
+                    <td>{{ uptime }}%</td>
+                </tr>
             {% endfor %}
-        </div>
+        </table>
     </div>
 {% endblock %}
