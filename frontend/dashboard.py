@@ -7,6 +7,7 @@ import sqlite3
 import random
 import string
 import hashlib
+import sys
 from flask import Flask, render_template, request, redirect, url_for, session
 
 app = Flask(__name__)
@@ -102,6 +103,7 @@ def init_db():
         logging.info('Database and tables initialized successfully.')
     except Exception as e:
         logging.error(f"Error during database initialization: {e}")
+        sys.exit(1) 
 
 # Function to generate a random password
 def generate_random_password(length=10):
