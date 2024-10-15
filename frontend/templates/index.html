@@ -8,16 +8,16 @@
     <div class="tiles-container">
         {% for site in data %}
         <div class="tile">
-            <div class="site-name">{{ site[1] }}</div> <!-- Updated site name index -->
-            <div class="uptime-percentage">{{ site[4] }}% uptime</div>
+            <div class="site-name">{{ site[1] }}</div> <!-- Site name -->
+            <div class="uptime-percentage">{{ site[5] }}% uptime</div> <!-- Uptime percentage -->
             <div class="uptime-grid">
-                {% for week in site[3] %}
+                {% for week in site[4] %}
                 <div class="week-column">
                     {% for day in week %}
-                    <div class="uptime-box {{ day.status }}" 
-                         data-date="{{ day.date }}" 
+                    <div class="uptime-box {{ day['status'] }}"
+                         data-date="{{ day['date'] }}" 
                          data-site-id="{{ site[0] }}"
-                         onclick="showDowntimeDetails('{{ site[0] }}', '{{ day.date }}')">
+                         onclick="showDowntimeDetails('{{ site[0] }}', '{{ day['date'] }}')">
                     </div>
                     {% endfor %}
                 </div>
