@@ -43,7 +43,6 @@ def get_all_sites():
         logging.error(f"Error fetching sites: {e}")
         return []
 
-# Fetch site data for displaying uptime/downtime in the dashboard
 def get_site_data():
     try:
         with sqlite3.connect(DATABASE) as conn:
@@ -66,7 +65,7 @@ def get_site_data():
                 days_status = []
                 for day_offset in range(89, -1, -1):  # Start from 89 days ago to today
                     day = time.strftime('%Y-%m-%d', time.gmtime(time.time() - day_offset * 86400))
-                    days_status.append({'status': 'down' if day in downtime_dates else 'up', 'date': day})
+                    days_status.append({'status': 'downtime' if day in downtime_dates else 'uptime', 'date': day})
 
                 # Split the list into weekly chunks
                 weeks_status = [days_status[i:i + 7] for i in range(0, len(days_status), 7)]
