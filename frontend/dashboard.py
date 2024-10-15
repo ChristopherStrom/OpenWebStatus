@@ -62,13 +62,16 @@ def get_site_data():
                 """, (site_id,))
                 downtime_dates = [row[0] for row in cursor.fetchall()]
 
-                # Construct a list of days with 'up' or 'down' status
+                # Construct a list of days with 'up' or 'down' status for the last 90 days
                 days_status = []
                 for day_offset in range(89, -1, -1):  # Start from 89 days ago to today
                     day = time.strftime('%Y-%m-%d', time.gmtime(time.time() - day_offset * 86400))
                     days_status.append({'status': 'down' if day in downtime_dates else 'up', 'date': day})
 
-                site_data.append((name, purpose, url, days_status))
+                # Split the list into weekly chunks
+                weeks_status = [days_status[i:i + 7] for i in range(0, len(days_status), 7)]
+
+                site_data.append((name, purpose, url, weeks_status))
 
         return site_data
     except Exception as e:
