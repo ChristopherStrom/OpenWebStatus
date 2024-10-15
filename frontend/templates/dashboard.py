@@ -4,7 +4,7 @@ import os
 
 app = Flask(__name__)
 
-DATABASE = 'uptime.db'
+DATABASE = '../backend/uptime.db'
 
 # Function to create database and uptime table if it doesn't exist
 def init_db():
