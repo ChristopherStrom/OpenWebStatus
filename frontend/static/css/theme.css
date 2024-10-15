@@ -93,12 +93,14 @@ main {
     gap: 10px;
     margin-top: 20px;
     flex-wrap: wrap;
+    position: relative;
 }
 
 .week-column {
     display: flex;
     flex-direction: column;
     gap: 3px;
+    position: relative;
 }
 
 .uptime-box {
@@ -121,7 +123,7 @@ main {
 .uptime-box:hover::after {
     content: attr(data-date);
     position: absolute;
-    top: -35px;  /* Adjusted to display above the hovered box */
+    top: -35px;
     left: 50%;
     transform: translateX(-50%);
     background-color: #333;
@@ -133,11 +135,10 @@ main {
     z-index: 100;
 }
 
-
 /* Special case for tooltips in the top row */
 .week-column:first-child .uptime-box:hover::after {
-    bottom: auto;
     top: 25px;
+    bottom: auto;
 }
 
 /* Special case for tooltips in the leftmost column */
@@ -148,8 +149,21 @@ main {
 
 /* Special case for tooltips in the bottom row */
 .week-column:last-child .uptime-box:hover::after {
-    bottom: auto;
     top: -35px;
+    bottom: auto;
+}
+
+/* Month Labels */
+.month-label {
+    text-align: center;
+    font-weight: bold;
+    margin-top: 10px;
+    font-size: 0.9em;
+    color: #333;
+}
+
+.week-column:nth-child(3n) .month-label {
+    display: block;
 }
 
 /* Footer Styling */
@@ -231,8 +245,8 @@ input[type="checkbox"] {
 
 .uptime-box-horizontal:hover::after {
     content: attr(data-date);
-    position: fixed;
-    bottom: 25px;
+    position: absolute;
+    top: -35px;
     left: 50%;
     transform: translateX(-50%);
     background-color: #333;
@@ -246,8 +260,8 @@ input[type="checkbox"] {
 
 /* Special case for tooltips in the top row */
 .week-column:first-child .uptime-box-horizontal:hover::after {
-    bottom: auto;
     top: 25px;
+    bottom: auto;
 }
 
 /* Special case for tooltips in the leftmost column */
@@ -258,8 +272,8 @@ input[type="checkbox"] {
 
 /* Special case for tooltips in the bottom row */
 .week-column:last-child .uptime-box-horizontal:hover::after {
-    bottom: auto;
     top: -35px;
+    bottom: auto;
 }
 
 /* Special case for tooltips in the rightmost column */
