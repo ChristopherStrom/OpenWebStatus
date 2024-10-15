@@ -167,3 +167,67 @@ body {
 .sites-table tr:hover {
     background-color: #f1f1f1;
 }
+
+/* Styles for the tiles and uptime boxes */
+.tiles-container {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 20px;
+    padding: 20px;
+}
+
+.tile {
+    background-color: #ffffff;
+    border-radius: 8px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    padding: 20px;
+    width: 300px;
+}
+
+.site-name {
+    font-weight: bold;
+    margin-bottom: 10px;
+}
+
+.uptime-grid {
+    display: grid;
+    grid-template-columns: repeat(7, 1fr);
+    gap: 5px;
+    margin-top: 10px;
+}
+
+.uptime-box {
+    width: 20px;
+    height: 20px;
+    border-radius: 3px;
+    background-color: #00ff00; /* Green for 'up' */
+}
+
+.uptime-box.downtime {
+    background-color: #ff0000; /* Red for 'down' */
+}
+
+/* Styles for the Add Site Form and Button */
+.btn-add-site, .btn-submit {
+    background-color: #007bff;
+    color: white;
+    border: none;
+    padding: 10px 20px;
+    margin: 10px 0;
+    border-radius: 5px;
+    cursor: pointer;
+    font-weight: bold;
+    transition: background-color 0.3s ease;
+}
+
+.btn-add-site:hover, .btn-submit:hover {
+    background-color: #0056b3;
+}
+
+.form-container {
+    background: #ffffff;
+    padding: 20px;
+    border-radius: 8px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    margin: 20px 0;
+}
