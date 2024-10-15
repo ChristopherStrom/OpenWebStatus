@@ -1,18 +1,27 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Login</title>
-</head>
-<body>
-    <h2>Login</h2>
-    <form method="POST" action="/login">
-        <label for="username">Username:</label>
-        <input type="text" id="username" name="username" required><br><br>
-        <label for="password">Password:</label>
-        <input type="password" id="password" name="password" required><br><br>
-        <button type="submit">Login</button>
-    </form>
-</body>
-</html>
+{% extends "theme.html" %}
+
+{% block title %}Dashboard{% endblock %}
+
+{% block content %}
+    <h1>Site Monitoring Dashboard</h1>
+
+    <div class="tiles-container">
+        {% for site in data %}
+        <div class="tile">
+            <div class="site-name">{{ site[0] }}</div>
+            <div class="uptime-percentage">{{ site[4] }}% uptime</div>
+            <div class="uptime-grid">
+                {% for week in site[3] %}
+                <div class="week-column">
+                    {% for day in week %}
+                    <a href="{{ url_for('downtime_details', site_id=site[5], date=day['date']) }}">
+                        <div class="uptime-box {{ day['status'] }}" data-date="{{ day['date'] }}" data-site-id="{{ site[5] }}"></div>
+                    </a>
+                    {% endfor %}
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+{% endblock %}

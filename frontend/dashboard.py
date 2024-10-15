@@ -199,13 +199,13 @@ def edit_site(site_id):
     return render_template('edit_site.html', site=site)
 
 @app.route('/downtime/<site_id>/<date>', methods=['GET'])
-def get_downtime_by_hour(site_id, date):
-    """Get downtime data for a specific site and date by hour."""
+def downtime_details(site_id, date):
+    """Display downtime details for a specific site and date by hour."""
     try:
         with sqlite3.connect(DATABASE) as conn:
             cursor = conn.cursor()
             cursor.execute("""
-                SELECT strftime('%H', down_at) as hour, COUNT(*)
+                SELECT strftime('%H', down_at) AS hour, COUNT(*)
                 FROM downtime
                 WHERE site_id = ? AND date(down_at) = ?
                 GROUP BY hour
@@ -213,12 +213,16 @@ def get_downtime_by_hour(site_id, date):
             """, (site_id, date))
             downtime_hours = cursor.fetchall()
 
-            downtime_data = {hour: count for hour, count in downtime_hours}
-        return jsonify(downtime_data)
+            # Prepare data with 24 hours
+            hourly_data = [{'hour': f"{i:02}", 'status': 'uptime'} for i in range(24)]
+            for hour, count in downtime_hours:
+                hourly_data[int(hour)]['status'] = 'downtime'
+
+            return render_template('downtime.html', site_id=site_id, date=date, hourly_data=hourly_data)
     except Exception as e:
         logging.error(f"Error fetching downtime by hour: {e}")
-        return jsonify({'error': 'Failed to retrieve downtime data'}), 500
-    
+        return "Error retrieving downtime data", 500
+
 # Add Site page
 @app.route('/add_site', methods=['GET', 'POST'])
 def add_site():
