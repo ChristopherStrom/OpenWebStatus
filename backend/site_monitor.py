@@ -3,19 +3,71 @@ import time
 import requests
 import sqlite3
 import logging
+import hashlib
+import random
+import string
 
-# Define paths for database and logs
 DATABASE = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'uptime.db')
 log_folder = os.path.join(os.path.dirname(os.path.abspath(__file__)), '../default/logs')
 log_file = os.path.join(log_folder, 'monitor.log')
 
-# Ensure logging folder and file are set up
+# Ensure logging is set up
 if not os.path.exists(log_folder):
     os.makedirs(log_folder)
-    logging.info(f"Created log folder: {log_folder}")
 
-logging.basicConfig(filename=log_file, level=logging.DEBUG,
-                    format='%(asctime)s - %(levelname)s - %(message)s')
+logging.basicConfig(
+    filename=log_file,
+    level=logging.DEBUG,
+    format='%(asctime)s - %(levelname)s - %(message)s'
+)
+
+def generate_random_password(length=10):
+    """Generate a random password."""
+    characters = string.ascii_letters + string.digits + string.punctuation
+    return ''.join(random.choice(characters) for _ in range(length))
+
+def hash_password(password):
+    """Hash a password using SHA-256."""
+    return hashlib.sha256(password.encode()).hexdigest()
+
+def seed_admin_user():
+    """Seed the admin user if no users exist and create/overwrite default password file."""
+    try:
+        conn = sqlite3.connect(DATABASE)
+        cursor = conn.cursor()
+
+        # Check if any users exist
+        cursor.execute("SELECT COUNT(*) FROM users")
+        count = cursor.fetchone()[0]
+
+        if count == 0:
+            # Generate and hash a random password
+            random_password = generate_random_password()
+            hashed_password = hash_password(random_password)
+
+            # Insert the default admin user
+            cursor.execute("INSERT INTO users (username, password) VALUES (?, ?)", ('admin', hashed_password))
+            conn.commit()
+
+            # Define the path for the default password file
+            default_folder = os.path.join(os.path.dirname(os.path.abspath(__file__)), '../default')
+            if not os.path.exists(default_folder):
+                os.makedirs(default_folder)
+            
+            password_file_path = os.path.join(default_folder, 'default_password.txt')
+
+            # Overwrite the password file
+            with open(password_file_path, 'w') as f:
+                f.write(f"Default admin password: {random_password}")
+
+            logging.info('Admin user created and default password saved.')
+        else:
+            logging.info('Admin user already exists, skipping password creation.')
+
+        conn.close()
+    except Exception as e:
+        logging.error(f"Error during admin user seeding: {e}")
+        raise
 
 def check_db_tables():
     """Ensure required tables exist in the database."""
@@ -23,7 +75,14 @@ def check_db_tables():
         conn = sqlite3.connect(DATABASE)
         cursor = conn.cursor()
 
-        # Create the 'sites' table if it does not exist
+        cursor.execute('''
+            CREATE TABLE IF NOT EXISTS users (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                username TEXT,
+                password TEXT
+            )
+        ''')
+
         cursor.execute('''
             CREATE TABLE IF NOT EXISTS sites (
                 id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -35,7 +94,6 @@ def check_db_tables():
             )
         ''')
 
-        # Create the 'downtime' table if it does not exist
         cursor.execute('''
             CREATE TABLE IF NOT EXISTS downtime (
                 id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -46,10 +104,12 @@ def check_db_tables():
 
         conn.commit()
         conn.close()
-        logging.info("Database tables checked and created if needed.")
-    
+        logging.info('Database and tables initialized successfully.')
     except sqlite3.Error as e:
         logging.error(f"SQLite error during table creation: {e}")
+        raise
+    except Exception as e:
+        logging.error(f"Error during database initialization: {e}")
         raise
 
 def monitor_sites():
@@ -58,26 +118,16 @@ def monitor_sites():
         try:
             conn = sqlite3.connect(DATABASE)
             cursor = conn.cursor()
-
-            # Select enabled sites to monitor
             cursor.execute("SELECT id, url, frequency FROM sites WHERE enabled=1")
             sites = cursor.fetchall()
 
-            # Monitor each site
             for site_id, url, frequency in sites:
                 check_site_status(site_id, url, frequency)
 
             conn.close()
-            logging.info("Site monitoring cycle completed.")
             time.sleep(10)  # Recheck every 10 seconds for new sites
-        
-        except sqlite3.Error as e:
-            logging.error(f"SQLite error in site monitoring: {e}")
-            time.sleep(10)  # Retry after delay in case of SQLite issues
-
         except Exception as e:
-            logging.error(f"Unexpected error in site monitoring: {e}")
-            time.sleep(10)  # Retry after delay
+            logging.error(f"Error in site monitoring: {e}")
 
 def check_site_status(site_id, url, frequency):
     """Check the status of a site and log downtime if needed."""
@@ -85,9 +135,6 @@ def check_site_status(site_id, url, frequency):
         response = requests.get(url, timeout=10)
         if response.status_code != 200:
             log_downtime(site_id)
-        else:
-            logging.info(f"Site {url} (ID: {site_id}) is up.")
-
     except requests.RequestException:
         log_downtime(site_id)
 
@@ -95,31 +142,22 @@ def check_site_status(site_id, url, frequency):
 
 def log_downtime(site_id):
     """Log when a site goes down."""
-    try:
-        conn = sqlite3.connect(DATABASE)
-        cursor = conn.cursor()
-
-        # Insert downtime entry
-        cursor.execute("INSERT INTO downtime (site_id, down_at) VALUES (?, ?)", 
-                       (site_id, time.strftime('%Y-%m-%d %H:%M:%S')))
-        
-        conn.commit()
-        conn.close()
-        logging.warning(f"Site with ID {site_id} is down. Downtime logged.")
-    
-    except sqlite3.Error as e:
-        logging.error(f"SQLite error while logging downtime for site {site_id}: {e}")
+    conn = sqlite3.connect(DATABASE)
+    cursor = conn.cursor()
+    cursor.execute("INSERT INTO downtime (site_id, down_at) VALUES (?, ?)", (site_id, time.strftime('%Y-%m-%d %H:%M:%S')))
+    conn.commit()
+    conn.close()
 
 if __name__ == '__main__':
-    logging.info("Starting site monitoring service...")
+    logging.info("Starting site monitoring...")
     
     try:
-        # Ensure tables are set up
+        # Ensure tables are created and the admin user is seeded with a default password
         check_db_tables()
-        logging.info("Database and tables initialized.")
-
-        # Begin site monitoring
-        monitor_sites()
-
+        seed_admin_user()
     except Exception as e:
-        logging.error(f"Fatal error occurred in site monitoring service: {e}")
+        logging.error(f"Failed during DB initialization: {e}")
+        exit(1)
+
+    # Start the site monitoring process
+    monitor_sites()
