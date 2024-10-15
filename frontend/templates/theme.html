@@ -11,14 +11,18 @@
         <div class="logo">OpenWebStatus Dashboard</div>
         <nav>
             <a href="/" class="nav-link">Dashboard</a>
-            <a href="/settings" class="nav-link">Settings</a>
-            <a href="/logout" class="nav-link">Logout</a>
+            {% if session.logged_in %}
+                <a href="/settings" class="nav-link">Settings</a>
+                <a href="/logout" class="nav-link logout-button">Logout</a>
+            {% else %}
+                <a href="/login" class="nav-link login-button">Login</a>
+            {% endif %}
         </nav>
     </header>
 
     <main>
         {% block content %}
-        <!-- Page-specific content goes here -->
+        <!-- Page-specific content -->
         {% endblock %}
     </main>
 
