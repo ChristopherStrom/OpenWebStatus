@@ -16,7 +16,8 @@
                     {% for day in week %}
                     <div class="uptime-box {{ day['status'] }}" 
                          data-date="{{ day['date'] }}" 
-                         data-site-id="{{ site[0] }}"> <!-- Use site_id here -->
+                         data-site-id="{{ site[0] }}"
+                         onclick="showDowntimeDetails('{{ site[0] }}', '{{ day['date'] }}')">
                     </div>
                     {% endfor %}
                 </div>
@@ -27,28 +28,23 @@
     </div>
 
     <script>
-        document.querySelectorAll('.uptime-box').forEach(box => {
-            box.addEventListener('click', function() {
-                const siteId = this.getAttribute('data-site-id');
-                const date = this.getAttribute('data-date');
-
-                fetch(`/api/downtime/${siteId}/${date}`)
-                    .then(response => response.json())
-                    .then(data => {
-                        if (data.error) {
-                            alert('Error fetching data: ' + data.error);
-                        } else {
-                            // Store the response in local storage to be used in another page
-                            localStorage.setItem('downtimeDetails', JSON.stringify(data.hourly_data));
-                            // Redirect to the downtime page
-                            window.location.href = `/downtime/${siteId}/${date}`;
-                        }
-                    })
-                    .catch(error => {
-                        console.error('Error:', error);
-                        alert('Unable to fetch data. Please try again later.');
-                    });
-            });
-        });
+        function showDowntimeDetails(siteId, date) {
+            fetch(`/api/downtime/${siteId}/${date}`)
+                .then(response => response.json())
+                .then(data => {
+                    if (data.error) {
+                        alert('Error fetching data: ' + data.error);
+                    } else {
+                        // Store the response in local storage to be used in another page
+                        localStorage.setItem('downtimeDetails', JSON.stringify(data.hourly_data));
+                        // Redirect to the downtime page
+                        window.location.href = `/downtime/${siteId}/${date}`;
+                    }
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    alert('Unable to fetch data. Please try again later.');
+                });
+        }
     </script>
 {% endblock %}
