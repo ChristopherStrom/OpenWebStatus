@@ -3,25 +3,78 @@
 {% block title %}Settings{% endblock %}
 
 {% block content %}
-    <div class="card">
-        <h2>Add Site to Monitor</h2>
+    <h1>Manage Sites</h1>
+
+    <!-- Add Site Button -->
+    <button id="addSiteButton" class="btn-add-site">Add Site</button>
+
+    <!-- Add Site Form (Initially Hidden) -->
+    <div id="addSiteForm" class="form-container" style="display: none;">
         <form method="POST" action="/add_site">
-            <label for="name">Site Name:</label>
-            <input type="text" id="name" name="name" required><br>
+            <div class="form-group">
+                <label for="name">Site Name:</label>
+                <input type="text" id="name" name="name" required>
+            </div>
 
-            <label for="purpose">Purpose:</label>
-            <input type="text" id="purpose" name="purpose" required><br>
+            <div class="form-group">
+                <label for="purpose">Purpose:</label>
+                <input type="text" id="purpose" name="purpose" required>
+            </div>
 
-            <label for="url">URL:</label>
-            <input type="url" id="url" name="url" required><br>
+            <div class="form-group">
+                <label for="url">URL:</label>
+                <input type="url" id="url" name="url" required>
+            </div>
 
-            <label for="frequency">Check Frequency (seconds):</label>
-            <input type="number" id="frequency" name="frequency" min="10" required><br>
+            <div class="form-group">
+                <label for="frequency">Check Frequency (seconds):</label>
+                <input type="number" id="frequency" name="frequency" min="10" required>
+            </div>
 
-            <label for="enabled">Enabled:</label>
-            <input type="checkbox" id="enabled" name="enabled"><br>
+            <div class="form-group">
+                <label for="enabled">Enabled:</label>
+                <input type="checkbox" id="enabled" name="enabled">
+            </div>
 
-            <input type="submit" value="Add Site">
+            <button type="submit" class="btn-submit">Add Site</button>
         </form>
     </div>
+
+    <!-- Existing Sites Table -->
+    <div class="sites-list">
+        <h2>Current Sites</h2>
+        <table class="sites-table">
+            <thead>
+                <tr>
+                    <th>Site Name</th>
+                    <th>Purpose</th>
+                    <th>URL</th>
+                    <th>Frequency (s)</th>
+                    <th>Enabled</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for site in sites %}
+                <tr>
+                    <td>{{ site[1] }}</td>
+                    <td>{{ site[2] }}</td>
+                    <td>{{ site[3] }}</td>
+                    <td>{{ site[4] }}</td>
+                    <td>{{ 'Yes' if site[5] else 'No' }}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+
+    <script>
+        document.getElementById("addSiteButton").addEventListener("click", function() {
+            var form = document.getElementById("addSiteForm");
+            if (form.style.display === "none") {
+                form.style.display = "block";
+            } else {
+                form.style.display = "none";
+            }
+        });
+    </script>
 {% endblock %}

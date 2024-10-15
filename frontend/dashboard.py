@@ -34,6 +34,28 @@ logging.basicConfig(
     format='%(asctime)s - %(levelname)s - %(message)s'
 )
 
+# Fetch all sites from the database
+def get_all_sites():
+    try:
+        conn = sqlite3.connect(DATABASE)
+        cursor = conn.cursor()
+        cursor.execute("SELECT * FROM sites")
+        sites = cursor.fetchall()
+        conn.close()
+        return sites
+    except Exception as e:
+        logging.error(f"Error fetching sites: {e}")
+        return []
+
+# Settings page to add and manage sites
+@app.route('/settings')
+def settings():
+    if 'logged_in' not in session:
+        return redirect(url_for('login'))
+
+    sites = get_all_sites()
+    return render_template('settings.html', sites=sites)
+
 # Function to generate a random password
 def generate_random_password(length=10):
     characters = string.ascii_letters + string.digits + string.punctuation

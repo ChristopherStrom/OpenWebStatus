@@ -93,3 +93,77 @@ body {
     padding: 10px 0;
     margin-top: 20px;
 }
+
+/* General button styling */
+.btn-add-site, .btn-submit {
+    background-color: #007bff;
+    color: white;
+    border: none;
+    padding: 10px 20px;
+    margin: 10px 0;
+    border-radius: 5px;
+    cursor: pointer;
+    font-weight: bold;
+    transition: background-color 0.3s ease;
+}
+
+.btn-add-site:hover, .btn-submit:hover {
+    background-color: #0056b3;
+}
+
+/* Form container */
+.form-container {
+    background: #ffffff;
+    padding: 20px;
+    border-radius: 8px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    margin: 20px 0;
+}
+
+/* Form groups styling */
+.form-group {
+    margin-bottom: 15px;
+}
+
+.form-group label {
+    display: block;
+    font-weight: bold;
+    margin-bottom: 5px;
+}
+
+.form-group input[type="text"],
+.form-group input[type="url"],
+.form-group input[type="number"] {
+    width: 100%;
+    padding: 10px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+}
+
+/* Sites table styling */
+.sites-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 20px;
+    background: #fff;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+}
+
+.sites-table th, .sites-table td {
+    border: 1px solid #ddd;
+    padding: 12px;
+    text-align: left;
+}
+
+.sites-table th {
+    background-color: #007bff;
+    color: white;
+}
+
+.sites-table tr:nth-child(even) {
+    background-color: #f9f9f9;
+}
+
+.sites-table tr:hover {
+    background-color: #f1f1f1;
+}
