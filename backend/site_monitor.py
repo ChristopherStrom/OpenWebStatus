@@ -12,8 +12,7 @@ log_folder = os.path.join(os.path.dirname(os.path.abspath(__file__)), '../defaul
 log_file = os.path.join(log_folder, 'monitor.log')
 
 # Ensure logging is set up
-if not os.path.exists(log_folder):
-    os.makedirs(log_folder)
+os.makedirs(log_folder, exist_ok=True)
 
 logging.basicConfig(
     filename=log_file,
@@ -51,8 +50,7 @@ def seed_admin_user():
 
             # Define the path for the default password file
             default_folder = os.path.join(os.path.dirname(os.path.abspath(__file__)), '../default')
-            if not os.path.exists(default_folder):
-                os.makedirs(default_folder)
+            os.makedirs(default_folder, exist_ok=True)
             
             password_file_path = os.path.join(default_folder, 'default_password.txt')
 
@@ -169,11 +167,15 @@ def check_site_status(site_id, url, frequency):
 
 def log_downtime(site_id):
     """Log when a site goes down."""
-    conn = sqlite3.connect(DATABASE)
-    cursor = conn.cursor()
-    cursor.execute("INSERT INTO downtime (site_id, down_at) VALUES (?, ?)", (site_id, time.strftime('%Y-%m-%d %H:%M:%S')))
-    conn.commit()
-    conn.close()
+    try:
+        conn = sqlite3.connect(DATABASE)
+        cursor = conn.cursor()
+        cursor.execute("INSERT INTO downtime (site_id, down_at) VALUES (?, ?)", (site_id, time.strftime('%Y-%m-%d %H:%M:%S')))
+        conn.commit()
+        conn.close()
+        logging.info(f"Logged downtime for site ID: {site_id}")
+    except Exception as e:
+        logging.error(f"Error logging downtime for site ID {site_id}: {e}")
 
 if __name__ == '__main__':
     logging.info("Starting site monitoring...")
