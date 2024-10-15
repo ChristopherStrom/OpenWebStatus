@@ -82,6 +82,8 @@ main {
     display: flex;
     gap: 10px;
     margin-top: 20px;
+    overflow-x: auto;
+    padding: 10px 0;
 }
 
 .week-column {
@@ -184,7 +186,7 @@ input[type="checkbox"] {
 /* Uptime Grid Horizontal Layout */
 .uptime-grid-horizontal {
     display: flex;
-    gap: 10px;  /* Adjust spacing between weeks as necessary */
+    gap: 10px;
     margin-top: 20px;
     overflow-x: auto;
     padding: 10px 0;
@@ -193,7 +195,7 @@ input[type="checkbox"] {
 .week-column {
     display: flex;
     flex-direction: column;
-    gap: 3px; /* Adjust spacing between days as necessary */
+    gap: 3px;
 }
 
 .uptime-box-horizontal {
@@ -206,11 +208,11 @@ input[type="checkbox"] {
 }
 
 .uptime-box-horizontal.uptime {
-    background-color: #76c7c0;  /* Green for uptime */
+    background-color: #76c7c0;
 }
 
 .uptime-box-horizontal.downtime {
-    background-color: #ff6b6b;  /* Red for downtime */
+    background-color: #ff6b6b;
 }
 
 .uptime-box-horizontal:hover::after {

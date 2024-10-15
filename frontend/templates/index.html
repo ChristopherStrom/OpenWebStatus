@@ -10,10 +10,10 @@
         <div class="tile">
             <div class="site-name">{{ site[0] }}</div>
             <div class="uptime-grid-horizontal">
-                {% for week in site[3]|batch(7) %}
+                {% for week in site[3] %}
                 <div class="week-column">
                     {% for day in week %}
-                    <div class="uptime-box-horizontal {{ day['status'] }}" data-date="{{ day['date'] }}"></div>
+                    <div class="uptime-box-horizontal {{ day.status }}" data-date="{{ day.date }}"></div>
                     {% endfor %}
                 </div>
                 {% endfor %}
