@@ -82,8 +82,6 @@ main {
     display: flex;
     gap: 10px;
     margin-top: 20px;
-    overflow-x: auto;
-    padding: 10px 0;
 }
 
 .week-column {
@@ -124,12 +122,22 @@ main {
     z-index: 100;
 }
 
-/* Month Labels */
-.month-label {
-    text-align: center;
-    font-weight: bold;
-    margin-bottom: 5px;
-    font-size: 0.9em;
+/* Special case for tooltips in the top row */
+.week-column:first-child .uptime-box:hover::after {
+    bottom: auto;
+    top: 25px;
+}
+
+/* Special case for tooltips in the leftmost column */
+.week-column .uptime-box:first-child:hover::after {
+    left: 0;
+    transform: translateX(10%);
+}
+
+/* Special case for tooltips in the bottom row */
+.week-column:last-child .uptime-box:hover::after {
+    bottom: auto;
+    top: -35px;
 }
 
 /* Footer Styling */
@@ -188,14 +196,6 @@ input[type="checkbox"] {
     display: flex;
     gap: 10px;
     margin-top: 20px;
-    overflow-x: auto;
-    padding: 10px 0;
-}
-
-.week-column {
-    display: flex;
-    flex-direction: column;
-    gap: 3px;
 }
 
 .uptime-box-horizontal {
@@ -218,7 +218,7 @@ input[type="checkbox"] {
 .uptime-box-horizontal:hover::after {
     content: attr(data-date);
     position: absolute;
-    top: 25px; /* Default to display tooltip below the element */
+    bottom: 25px;
     left: 50%;
     transform: translateX(-50%);
     background-color: #333;
@@ -232,25 +232,25 @@ input[type="checkbox"] {
 
 /* Special case for tooltips in the top row */
 .week-column:first-child .uptime-box-horizontal:hover::after {
-    top: auto;
-    bottom: 25px; /* Position the tooltip above the element to avoid cutting off at the top */
+    bottom: auto;
+    top: 25px;
 }
 
-/* Special case for tooltips in the leftmost row */
+/* Special case for tooltips in the leftmost column */
 .week-column .uptime-box-horizontal:first-child:hover::after {
-    left: 0; /* Align to the left to avoid cutting off */
+    left: 10%;
     transform: translateX(0);
 }
 
 /* Special case for tooltips in the bottom row */
 .week-column:last-child .uptime-box-horizontal:hover::after {
-    top: auto;
-    bottom: 25px; /* Position tooltip above the element to avoid being cut off at the bottom */
+    bottom: auto;
+    top: -35px;
 }
 
-/* Special case for tooltips in the rightmost row */
+/* Special case for tooltips in the rightmost column */
 .week-column .uptime-box-horizontal:last-child:hover::after {
     left: auto;
-    right: 0; /* Align tooltip to the right to avoid cutting off at the right edge */
+    right: 0;
     transform: translateX(0);
 }
