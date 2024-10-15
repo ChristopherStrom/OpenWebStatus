@@ -9,15 +9,16 @@
         {% for site in data %}
         <div class="tile">
             <div class="site-name">{{ site[0] }}</div>
-            <div class="uptime-grid-horizontal">
+            <div class="uptime-grid">
                 {% for week in site[3] %}
                 <div class="week-column">
                     {% for day in week %}
-                    <div class="uptime-box-horizontal {{ day.status }}" data-date="{{ day.date }}"></div>
+                    <div class="uptime-box {{ day['status'] }}" data-date="{{ day['date'] }}"></div>
                     {% endfor %}
                 </div>
                 {% endfor %}
             </div>
+            <div class="uptime-percentage">Uptime: {{ site[4] }}%</div>
         </div>
         {% endfor %}
     </div>
