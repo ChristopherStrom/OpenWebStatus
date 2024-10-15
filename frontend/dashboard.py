@@ -66,7 +66,7 @@ def get_site_data():
                 days_status = []
                 for day_offset in range(89, -1, -1):  # Start from 89 days ago to today
                     day = time.strftime('%Y-%m-%d', time.gmtime(time.time() - day_offset * 86400))
-                    days_status.append({'status': 'downtime' if day in downtime_dates else 'uptime', 'date': day})
+                    days_status.append({'status': 'downtime' if day in downtime_dates else 'uptime', 'date': day, 'site_id': site_id})
 
                 # Calculate uptime percentage
                 total_days = len(days_status)
@@ -76,7 +76,7 @@ def get_site_data():
                 # Split the list into weekly chunks
                 weeks_status = [days_status[i:i + 7] for i in range(0, len(days_status), 7)]
 
-                site_data.append((name, purpose, url, weeks_status, round(uptime_percentage, 2)))
+                site_data.append((site_id, name, purpose, url, weeks_status, round(uptime_percentage, 2)))
 
         return site_data
     except Exception as e:
@@ -198,7 +198,7 @@ def edit_site(site_id):
 
     return render_template('edit_site.html', site=site)
 
-@app.route('/api/downtime/<site_id>/<date>', methods=['GET'])
+@app.route('/api/downtime/<int:site_id>/<date>', methods=['GET'])
 def get_downtime_details(site_id, date):
     """API endpoint to get downtime details for a specific site and date."""
     try:
@@ -222,32 +222,6 @@ def get_downtime_details(site_id, date):
     except Exception as e:
         logging.error(f"Error fetching downtime by hour for API: {e}")
         return jsonify({'error': 'Error retrieving downtime data'}), 500
-
-# Add Site page
-@app.route('/add_site', methods=['GET', 'POST'])
-def add_site():
-    if 'logged_in' not in session:
-        return redirect(url_for('login'))
-
-    if request.method == 'POST':
-        name = request.form['name']
-        purpose = request.form['purpose']
-        url = request.form['url']
-        frequency = int(request.form['frequency'])
-        enabled = 1 if 'enabled' in request.form else 0
-
-        try:
-            with sqlite3.connect(DATABASE) as conn:
-                cursor = conn.cursor()
-                cursor.execute("INSERT INTO sites (name, purpose, url, frequency, enabled) VALUES (?, ?, ?, ?, ?)",
-                               (name, purpose, url, frequency, enabled))
-                conn.commit()
-                logging.info(f"Added new site: {name}")
-        except Exception as e:
-            logging.error(f"Error adding site: {e}")
-        return redirect(url_for('index'))
-
-    return render_template('add_site.html')
 
 # Ensure the default and logs folder exist
 ensure_default_folders()
